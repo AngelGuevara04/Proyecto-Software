@@ -1,0 +1,50 @@
+<!-- dashboard-alumno.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Residencias - Alumno</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <img src="logo.jpg" alt="Logo">
+    <h1>Panel de Alumno</h1>
+    <button id="logout-button">Cerrar Sesión</button>
+  </header>
+  <main>
+    <section>
+      <h2>Estado del Proyecto</h2>
+      <div id="estado-proyecto">Cargando estado...</div>
+    </section>
+    <section>
+      <h2>Subir Anteproyecto</h2>
+      <form id="form-anteproyecto">
+        <input type="file" id="archivo" accept="application/pdf" required>
+        <button type="submit">Enviar Anteproyecto</button>
+      </form>
+    </section>
+    <section>
+      <h2>Subir Reporte Parcial</h2>
+      <form id="form-reporte">
+        <input type="file" id="reporte" accept="application/pdf" required>
+        <button type="submit">Enviar Reporte</button>
+      </form>
+    </section>
+    <section>
+      <h2>Subir Proyecto Final</h2>
+      <form id="form-final">
+        <input type="file" id="final" accept="application/pdf" required>
+        <button type="submit">Enviar Proyecto Final</button>
+      </form>
+    </section>
+  </main>
+  <footer>
+    <p>&copy; 2025 Sistema de Residencias Profesionales</p>
+  </footer>
+
+  <script type="module" src="firebase-config.js"></script>
+  <script type="module" src="script-alumno.js"></script>
+</body>
+</html>
