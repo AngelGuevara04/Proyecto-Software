@@ -9,7 +9,7 @@ const firebaseConfig = {
   authDomain: "ingenova-6da56.firebaseapp.com",
   databaseURL: "https://ingenova-6da56-default-rtdb.firebaseio.com",
   projectId: "ingenova-6da56",
-  storageBucket: "ingenova-6da56.appspot.com",
+  storageBucket: "ingenova-6da56.firebasestorage.app",
   messagingSenderId: "255346301463",
   appId: "1:255346301463:web:35c7325c09ab634876da52",
   measurementId: "G-H3FLH6S41Y"
