@@ -12,7 +12,7 @@ import {
   where,
   doc,
   getDoc,
-  updateDoc
+  setDoc
 } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
 
 const auth = getAuth(app);
@@ -22,7 +22,7 @@ onAuthStateChanged(auth, async user => {
     return window.location.href = 'login.html';
   }
 
-  // Verificar que sea ejecutivo
+  // Verificar rol de ejecutivo
   const perfilSnap = await getDoc(doc(db, 'usuarios', user.uid));
   if (!perfilSnap.exists() || perfilSnap.data().rol !== 'ejecutivo') {
     alert('Acceso denegado: solo administrador puede ver este panel.');
@@ -30,21 +30,22 @@ onAuthStateChanged(auth, async user => {
     return window.location.href = 'login.html';
   }
 
-  // Cerrar sesión
+  // Botón Cerrar Sesión
   document.getElementById('logout-button')
     .addEventListener('click', async () => {
       await signOut(auth);
       window.location.href = 'login.html';
     });
 
+  // Referencias DOM
   const listaDiv      = document.getElementById('lista-documentos');
   const alumnoSelect  = document.getElementById('alumno');
   const docenteSelect = document.getElementById('docente');
   const formAsignar   = document.getElementById('form-asignar-asesor');
 
   listaDiv.innerHTML      = '';
-  alumnoSelect.innerHTML  = '<option value=\"\">-- Selecciona alumno --</option>';
-  docenteSelect.innerHTML = '<option value=\"\">-- Selecciona docente --</option>';
+  alumnoSelect.innerHTML  = '<option value="">-- Selecciona alumno --</option>';
+  docenteSelect.innerHTML = '<option value="">-- Selecciona docente --</option>';
 
   // 1) Listar todos los alumnos
   const alumnosSnap = await getDocs(
@@ -80,7 +81,7 @@ onAuthStateChanged(auth, async user => {
     );
   }
 
-  // 3) Asignar asesor
+  // 3) Asignar asesor con setDoc(..., {merge:true})
   formAsignar.addEventListener('submit', async e => {
     e.preventDefault();
     const alumnoId  = alumnoSelect.value;
@@ -88,7 +89,9 @@ onAuthStateChanged(auth, async user => {
     if (!alumnoId || !docenteId) {
       return alert('Selecciona alumno y docente.');
     }
-    await updateDoc(doc(db, 'residencias', alumnoId), { asesorId: docenteId });
+
+    const ref = doc(db, 'residencias', alumnoId);
+    await setDoc(ref, { asesorId: docenteId }, { merge: true });
     alert('Asesor asignado con éxito.');
     window.location.reload();
   });
