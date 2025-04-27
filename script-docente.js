@@ -1,33 +1,44 @@
 // script-docente.js
-import { auth, db } from './firebase-config.js';
-import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js';
+import { app, db } from './firebase-config.js';
 import {
-  collection, query, where, getDocs,
-  doc, updateDoc, getDoc
+  getAuth,
+  onAuthStateChanged,
+  signOut
+} from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js';
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  doc,
+  updateDoc,
+  getDoc
 } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
+
+const auth = getAuth(app);
 
 onAuthStateChanged(auth, async user => {
   if (!user) return window.location.href = "login.html";
 
-  // Logout funcional
+  // Cerrar sesión
   document.getElementById('logout-button')
     .addEventListener('click', async () => {
       await signOut(auth);
       window.location.href = "login.html";
     });
 
-  const uid = user.uid;
-  const cont = document.getElementById("reportes-pendientes");
+  const asesorId = user.uid;
+  const cont     = document.getElementById("reportes-pendientes");
   cont.innerHTML = "";
 
-  const q    = query(collection(db, "residencias"), where("asesorId", "==", uid));
+  const q    = query(collection(db, "residencias"), where("asesorId", "==", asesorId));
   const snap = await getDocs(q);
 
   for (const resDoc of snap.docs) {
     const data     = resDoc.data();
     const alumnoId = resDoc.id;
-    const userSnap = await getDoc(doc(db, "usuarios", alumnoId));
-    const nombre   = userSnap.exists() ? userSnap.data().nombre : alumnoId;
+    const uSnap    = await getDoc(doc(db, "usuarios", alumnoId));
+    const nombre   = uSnap.exists() ? uSnap.data().nombre : alumnoId;
 
     // Reportes pendientes
     data.reportes.forEach((rpt, i) => {
@@ -45,12 +56,13 @@ onAuthStateChanged(auth, async user => {
               <input type="text" placeholder="Observaciones">
               <button type="submit">Guardar</button>
             </form>
-          </div><hr>
+          </div>
+          <hr>
         `);
       }
     });
 
-    // Proyecto final pendiente
+    // Proyecto Final pendiente
     if (data.proyectoFinal.url && data.proyectoFinal.docente === "pendiente") {
       cont.insertAdjacentHTML('beforeend', `
         <div>
@@ -65,7 +77,8 @@ onAuthStateChanged(auth, async user => {
             <input type="text" placeholder="Observaciones">
             <button type="submit">Guardar</button>
           </form>
-        </div><hr>
+        </div>
+        <hr>
       `);
     }
   }
@@ -86,6 +99,7 @@ onAuthStateChanged(auth, async user => {
       alert("Reporte actualizado.");
       window.location.reload();
     }
+
     if (e.target.matches('.form-final-docente')) {
       e.preventDefault();
       const alumId = e.target.dataset.alumno;
