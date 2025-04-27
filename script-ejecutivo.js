@@ -1,6 +1,10 @@
 // script-ejecutivo.js
-import { auth, db } from './firebase-config.js';
-import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js';
+import { app, db } from './firebase-config.js';
+import {
+  getAuth,
+  onAuthStateChanged,
+  signOut
+} from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js';
 import {
   collection,
   getDocs,
@@ -11,17 +15,19 @@ import {
   updateDoc
 } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
 
-onAuthStateChanged(async user => {
+const auth = getAuth(app);
+
+onAuthStateChanged(auth, async user => {
   if (!user) return window.location.href = "login.html";
 
-  // Logout funcional
+  // Cerrar sesión
   document.getElementById('logout-button')
     .addEventListener('click', async () => {
       await signOut(auth);
       window.location.href = "login.html";
     });
 
-  // Verificar que es ejecutivo
+  // Verificar rol ejecutivo
   const perfilSnap = await getDoc(doc(db, "usuarios", user.uid));
   if (!perfilSnap.exists() || perfilSnap.data().rol !== "ejecutivo") {
     alert("Acceso denegado.");
@@ -38,24 +44,25 @@ onAuthStateChanged(async user => {
   alumnoSelect.innerHTML  = '<option value="">-- Selecciona alumno --</option>';
   docenteSelect.innerHTML = '<option value="">-- Selecciona docente --</option>';
 
-  // Poblar alumnos
+  // 1) Poblar alumnos
   const alumnosSnap = await getDocs(
     query(collection(db, "usuarios"), where("rol", "==", "alumno"))
   );
-  for (const usuDoc of alumnosSnap.docs) {
-    const alumnoId   = usuDoc.id;
-    const { nombre } = usuDoc.data();
-    const resSnap    = await getDoc(doc(db, "residencias", alumnoId));
-    const resData    = resSnap.exists() ? resSnap.data() : {};
+  for (const u of alumnosSnap.docs) {
+    const alumnoId   = u.id;
+    const { nombre } = u.data();
+    const rSnap      = await getDoc(doc(db, "residencias", alumnoId));
+    const rData      = rSnap.exists() ? rSnap.data() : {};
 
     listaDiv.insertAdjacentHTML('beforeend', `
       <div>
         <strong>Alumno:</strong> ${nombre} (${alumnoId})<br>
-        <strong>Asesor actual:</strong> ${resData.asesorId || '—'}<br>
-        <strong>Anteproyecto (admin):</strong> ${resData.anteproyectoEstado?.admin ?? 'pendiente'}<br>
-        <strong># Reportes:</strong> ${resData.reportes?.length ?? 0}<br>
-        <strong>Proyecto Final (admin):</strong> ${resData.proyectoFinal?.admin ?? 'pendiente'}
-      </div><hr>
+        <strong>Asesor actual:</strong> ${rData.asesorId || '—'}<br>
+        <strong>Anteproyecto (admin):</strong> ${rData.anteproyectoEstado?.admin ?? 'pendiente'}<br>
+        <strong># Reportes:</strong> ${rData.reportes?.length ?? 0}<br>
+        <strong>Proyecto Final (admin):</strong> ${rData.proyectoFinal?.admin ?? 'pendiente'}
+      </div>
+      <hr>
     `);
 
     alumnoSelect.insertAdjacentHTML('beforeend',
@@ -63,19 +70,17 @@ onAuthStateChanged(async user => {
     );
   }
 
-  // Poblar docentes
+  // 2) Poblar docentes
   const docentesSnap = await getDocs(
     query(collection(db, "usuarios"), where("rol", "==", "docente"))
   );
-  for (const docu of docentesSnap.docs) {
-    const docenteId   = docu.id;
-    const { nombre }  = docu.data();
+  for (const d of docentesSnap.docs) {
     docenteSelect.insertAdjacentHTML('beforeend',
-      `<option value="${docenteId}">${nombre}</option>`
+      `<option value="${d.id}">${d.data().nombre}</option>`
     );
   }
 
-  // Asignar asesor
+  // 3) Asignar asesor
   formAsignar.addEventListener('submit', async e => {
     e.preventDefault();
     const alumnoId  = alumnoSelect.value;
