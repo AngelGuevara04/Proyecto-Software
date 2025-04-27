@@ -22,7 +22,7 @@ onAuthStateChanged(auth, async user => {
     return window.location.href = 'login.html';
   }
 
-  // Verificar rol de ejecutivo
+  // Verificar que sea ejecutivo
   const perfilSnap = await getDoc(doc(db, 'usuarios', user.uid));
   if (!perfilSnap.exists() || perfilSnap.data().rol !== 'ejecutivo') {
     alert('Acceso denegado: solo administrador puede ver este panel.');
@@ -30,14 +30,13 @@ onAuthStateChanged(auth, async user => {
     return window.location.href = 'login.html';
   }
 
-  // Botón Cerrar Sesión
-  document.getElementById('logout-button')
-    .addEventListener('click', async () => {
-      await signOut(auth);
-      window.location.href = 'login.html';
-    });
+  // Cerrar sesión
+  document.getElementById('logout-button').addEventListener('click', async () => {
+    await signOut(auth);
+    window.location.href = 'login.html';
+  });
 
-  // Referencias DOM
+  // Referencias al DOM
   const listaDiv      = document.getElementById('lista-documentos');
   const alumnoSelect  = document.getElementById('alumno');
   const docenteSelect = document.getElementById('docente');
@@ -81,7 +80,7 @@ onAuthStateChanged(auth, async user => {
     );
   }
 
-  // 3) Asignar asesor con setDoc(..., {merge:true})
+  // 3) Asignar asesor: usamos setDoc con merge para crear o actualizar
   formAsignar.addEventListener('submit', async e => {
     e.preventDefault();
     const alumnoId  = alumnoSelect.value;
@@ -92,6 +91,7 @@ onAuthStateChanged(auth, async user => {
 
     const ref = doc(db, 'residencias', alumnoId);
     await setDoc(ref, { asesorId: docenteId }, { merge: true });
+
     alert('Asesor asignado con éxito.');
     window.location.reload();
   });
