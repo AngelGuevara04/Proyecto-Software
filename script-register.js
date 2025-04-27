@@ -1,8 +1,12 @@
 // script-register.js
-import { auth, db } from './firebase-config.js';
-import { createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js';
-import { setDoc, doc }                   from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
+import { app, db } from './firebase-config.js';
+import {
+  getAuth,
+  createUserWithEmailAndPassword
+} from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js';
+import { setDoc, doc } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
 
+const auth = getAuth(app);
 const registroForm = document.getElementById('registro-form');
 
 registroForm.addEventListener('submit', async e => {
