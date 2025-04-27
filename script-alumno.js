@@ -20,26 +20,37 @@ import {
 const auth = getAuth(app);
 
 onAuthStateChanged(auth, async user => {
-  if (!user) return window.location.href = "login.html";
+  if (!user) {
+    return window.location.href = 'login.html';
+  }
+
+  // Verificar que sea alumno
+  const perfilSnap = await getDoc(doc(db, 'usuarios', user.uid));
+  if (!perfilSnap.exists() || perfilSnap.data().rol !== 'alumno') {
+    alert('Acceso denegado: solo alumnos pueden subir documentos.');
+    await signOut(auth);
+    return window.location.href = 'login.html';
+  }
 
   // Cerrar sesión
   document.getElementById('logout-button')
     .addEventListener('click', async () => {
       await signOut(auth);
-      window.location.href = "login.html";
+      window.location.href = 'login.html';
     });
 
   const uid      = user.uid;
-  const resRef   = doc(db, "residencias", uid);
+  const resRef   = doc(db, 'residencias', uid);
   const estadoEl = document.getElementById('estado-proyecto');
 
+  // Función para actualizar estado en pantalla
   const actualizarEstado = async () => {
     const snap = await getDoc(resRef);
     if (!snap.exists()) return;
     const d = snap.data();
     estadoEl.innerHTML = `
       <p>Anteproyecto: ${d.anteproyectoEstado.docente} / ${d.anteproyectoEstado.admin}</p>
-      <p>Reportes: ${d.reportes.length}</p>
+      <p>Reportes subidos: ${d.reportes.length}</p>
       <p>Proyecto Final: ${d.proyectoFinal.docente} / ${d.proyectoFinal.admin}</p>
     `;
   };
@@ -55,13 +66,13 @@ onAuthStateChanged(auth, async user => {
       const url = await getDownloadURL(stRef);
       await updateDoc(resRef, {
         anteproyectoURL: url,
-        anteproyectoEstado: { docente: "pendiente", admin: "pendiente", obsDocente:"", obsAdmin:"" }
+        anteproyectoEstado: { docente: 'pendiente', admin: 'pendiente', obsDocente: '', obsAdmin: '' }
       });
-      alert("Anteproyecto subido.");
+      alert('Anteproyecto subido.');
       await actualizarEstado();
     });
 
-  // Subir Reporte
+  // Subir Reporte Parcial
   document.getElementById('form-reporte')
     .addEventListener('submit', async e => {
       e.preventDefault();
@@ -74,13 +85,13 @@ onAuthStateChanged(auth, async user => {
         reportes: arrayUnion({
           url,
           fecha: new Date().toISOString(),
-          docente: "pendiente",
-          admin: "pendiente",
-          obsDocente:"",
-          obsAdmin:""
+          docente: 'pendiente',
+          admin: 'pendiente',
+          obsDocente: '',
+          obsAdmin: ''
         })
       });
-      alert("Reporte subido.");
+      alert('Reporte subido.');
       await actualizarEstado();
     });
 
@@ -93,9 +104,9 @@ onAuthStateChanged(auth, async user => {
       await uploadBytes(stRef, file);
       const url = await getDownloadURL(stRef);
       await updateDoc(resRef, {
-        proyectoFinal: { url, docente:"pendiente", admin:"pendiente", obsDocente:"", obsAdmin:"" }
+        proyectoFinal: { url, docente: 'pendiente', admin: 'pendiente', obsDocente: '', obsAdmin: '' }
       });
-      alert("Proyecto final subido.");
+      alert('Proyecto final subido.');
       await actualizarEstado();
     });
 });
