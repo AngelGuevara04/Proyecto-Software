@@ -33,11 +33,10 @@ onAuthStateChanged(auth, async user => {
   }
 
   // Cerrar sesión
-  document.getElementById('logout-button')
-    .addEventListener('click', async () => {
-      await signOut(auth);
-      window.location.href = 'login.html';
-    });
+  document.getElementById('logout-button').addEventListener('click', async () => {
+    await signOut(auth);
+    window.location.href = 'login.html';
+  });
 
   const uid      = user.uid;
   const resRef   = doc(db, 'residencias', uid);
