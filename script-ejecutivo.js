@@ -19,24 +19,26 @@ const auth = getAuth(app);
 
 onAuthStateChanged(auth, async user => {
   if (!user) {
-    return window.location.href = 'login.html';
+    window.location.href = 'login.html';
+    return;
   }
 
-  // Verificar que sea ejecutivo
+  // Verificar rol 'ejecutivo'
   const perfilSnap = await getDoc(doc(db, 'usuarios', user.uid));
   if (!perfilSnap.exists() || perfilSnap.data().rol !== 'ejecutivo') {
     alert('Acceso denegado: solo administrador puede ver este panel.');
     await signOut(auth);
-    return window.location.href = 'login.html';
+    window.location.href = 'login.html';
+    return;
   }
 
-  // Cerrar sesión
+  // Botón Cerrar Sesión
   document.getElementById('logout-button').addEventListener('click', async () => {
     await signOut(auth);
     window.location.href = 'login.html';
   });
 
-  // Referencias al DOM
+  // Referencias DOM
   const listaDiv      = document.getElementById('lista-documentos');
   const alumnoSelect  = document.getElementById('alumno');
   const docenteSelect = document.getElementById('docente');
@@ -46,7 +48,7 @@ onAuthStateChanged(auth, async user => {
   alumnoSelect.innerHTML  = '<option value="">-- Selecciona alumno --</option>';
   docenteSelect.innerHTML = '<option value="">-- Selecciona docente --</option>';
 
-  // 1) Listar todos los alumnos
+  // 1) Listar alumnos
   const alumnosSnap = await getDocs(
     query(collection(db, 'usuarios'), where('rol', '==', 'alumno'))
   );
@@ -63,7 +65,7 @@ onAuthStateChanged(auth, async user => {
     );
   }
 
-  // 2) Listar todos los docentes
+  // 2) Listar docentes
   const docentesSnap = await getDocs(
     query(collection(db, 'usuarios'), where('rol', '==', 'docente'))
   );
@@ -80,15 +82,18 @@ onAuthStateChanged(auth, async user => {
     );
   }
 
-  // 3) Asignar asesor: usamos setDoc con merge para crear o actualizar
+  // 3) Asignar asesor con setDoc + merge
   formAsignar.addEventListener('submit', async e => {
     e.preventDefault();
     const alumnoId  = alumnoSelect.value;
     const docenteId = docenteSelect.value;
     if (!alumnoId || !docenteId) {
-      return alert('Selecciona alumno y docente.');
+      alert('Selecciona alumno y docente.');
+      return;
     }
 
+    // Asegurarnos de que el documento existe o crearlo,
+    // y actualizar sólo el campo asesorId:
     const ref = doc(db, 'residencias', alumnoId);
     await setDoc(ref, { asesorId: docenteId }, { merge: true });
 
