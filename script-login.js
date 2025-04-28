@@ -1,9 +1,6 @@
-// script-login.js
+// Autenticación y redirección según rol
 import { app, db } from './firebase-config.js';
-import {
-  getAuth,
-  signInWithEmailAndPassword
-} from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js';
+import { getAuth, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js';
 import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
 
 const auth = getAuth(app);
