@@ -24,45 +24,24 @@ onAuthStateChanged(auth, async user => {
     return window.location.href = 'login.html';
   }
 
-  // Verificar rol de alumno
+  // Verificar que sea alumno
   const perfilSnap = await getDoc(doc(db, 'usuarios', user.uid));
   if (!perfilSnap.exists() || perfilSnap.data().rol !== 'alumno') {
-    alert('Acceso denegado: solo alumnos pueden usar este panel.');
+    alert('Acceso denegado: solo alumnos pueden subir documentos.');
     await signOut(auth);
     return window.location.href = 'login.html';
   }
 
   // Cerrar sesión
-  document.getElementById('logout-button').addEventListener('click', async () => {
-    await signOut(auth);
-    window.location.href = 'login.html';
-  });
+  document.getElementById('logout-button')
+    .addEventListener('click', async () => {
+      await signOut(auth);
+      window.location.href = 'login.html';
+    });
 
   const uid      = user.uid;
   const resRef   = doc(db, 'residencias', uid);
   const estadoEl = document.getElementById('estado-proyecto');
-  const docAsig  = document.getElementById('docente-asignado');
-  const admAsig  = document.getElementById('admin-asignado');
-
-  // Cargar asignaciones (docente y administrador)
-  const residSnap = await getDoc(resRef);
-  if (residSnap.exists()) {
-    const d = residSnap.data();
-    // Docente asignado
-    if (d.asesorId) {
-      const ds = await getDoc(doc(db, 'usuarios', d.asesorId));
-      docAsig.textContent = ds.exists() ? ds.data().nombre : d.asesorId;
-    } else {
-      docAsig.textContent = 'No asignado';
-    }
-    // Administrador asignado
-    if (d.adminId) {
-      const as = await getDoc(doc(db, 'usuarios', d.adminId));
-      admAsig.textContent = as.exists() ? as.data().nombre : d.adminId;
-    } else {
-      admAsig.textContent = 'No asignado';
-    }
-  }
 
   // Función para actualizar estado en pantalla
   const actualizarEstado = async () => {
