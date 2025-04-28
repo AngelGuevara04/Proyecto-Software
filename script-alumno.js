@@ -1,31 +1,56 @@
-// Panel del Alumno
+// script-alumno.js
 import { app, db, storage } from './firebase-config.js';
-import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js';
-import { doc, getDoc, updateDoc, arrayUnion } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
-import { ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-storage.js';
+import {
+  getAuth,
+  onAuthStateChanged,
+  signOut
+} from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js';
+import {
+  doc,
+  getDoc,
+  updateDoc,
+  arrayUnion
+} from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
+import {
+  ref,
+  uploadBytes,
+  getDownloadURL
+} from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-storage.js';
 
 const auth = getAuth(app);
 
 onAuthStateChanged(auth, async user => {
-  if (!user) return window.location.href = "login.html";
+  if (!user) {
+    return window.location.href = 'login.html';
+  }
+
+  // Verificar que sea alumno
+  const perfilSnap = await getDoc(doc(db, 'usuarios', user.uid));
+  if (!perfilSnap.exists() || perfilSnap.data().rol !== 'alumno') {
+    alert('Acceso denegado: solo alumnos pueden subir documentos.');
+    await signOut(auth);
+    return window.location.href = 'login.html';
+  }
 
   // Cerrar sesión
-  document.getElementById('logout-button').addEventListener('click', async () => {
-    await signOut(auth);
-    window.location.href = "login.html";
-  });
+  document.getElementById('logout-button')
+    .addEventListener('click', async () => {
+      await signOut(auth);
+      window.location.href = 'login.html';
+    });
 
   const uid      = user.uid;
-  const resRef   = doc(db, "residencias", uid);
+  const resRef   = doc(db, 'residencias', uid);
   const estadoEl = document.getElementById('estado-proyecto');
 
+  // Función para actualizar estado en pantalla
   const actualizarEstado = async () => {
     const snap = await getDoc(resRef);
     if (!snap.exists()) return;
     const d = snap.data();
     estadoEl.innerHTML = `
       <p>Anteproyecto: ${d.anteproyectoEstado.docente} / ${d.anteproyectoEstado.admin}</p>
-      <p>Reportes: ${d.reportes.length}</p>
+      <p>Reportes subidos: ${d.reportes.length}</p>
       <p>Proyecto Final: ${d.proyectoFinal.docente} / ${d.proyectoFinal.admin}</p>
     `;
   };
