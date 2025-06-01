@@ -2,17 +2,7 @@
    ESTILOS PARA Dashboard Alumno
    ==================== */
 
-/* Contenedor principal */
-.main-alumno {
-  max-width: 800px;
-  margin: 1rem auto;
-  padding: 0 1rem;
-  background-color: #fafafa;
-  border-radius: 6px;
-  box-shadow: 0 0 8px rgba(0,0,0,0.1);
-}
-
-/* Header alumno */
+/* ===== Header ===== */
 .header-alumno {
   background-color: #333;
   color: #fff;
@@ -40,7 +30,17 @@
   background-color: #e74c3c;
 }
 
-/* Sección de enlaces */
+/* ===== Main (contenedor) ===== */
+.main-alumno {
+  max-width: 800px;
+  margin: 1rem auto;
+  padding: 0 1rem;
+  background-color: #fafafa;
+  border-radius: 6px;
+  box-shadow: 0 0 8px rgba(0,0,0,0.1);
+}
+
+/* ===== Sección "Mis Documentos" ===== */
 .seccion-enlaces {
   margin-bottom: 1.5rem;
 }
@@ -67,12 +67,33 @@
   color: #fff;
 }
 
-/* Sección de subida de archivos */
+/* ===== Sección "Subir Documentos" ===== */
 .seccion-subida h2 {
   font-size: 1.2rem;
   margin-bottom: 0.5rem;
 }
 
+/* Botones que muestran un formulario */
+.botones-subir {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.btn-mostrar-form {
+  background-color: #333;
+  color: #fff;
+  border: none;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-mostrar-form:hover {
+  background-color: #555;
+}
+
+/* Cada contenedor de formulario */
 .formulario-subida {
   background-color: #fff;
   padding: 1rem;
@@ -92,7 +113,8 @@
   margin-bottom: 0.5rem;
 }
 
-.formulario-subida button {
+/* Botón de “Subir” dentro de cada formulario */
+.btn-enviar {
   background-color: #333;
   color: #fff;
   border: none;
@@ -101,6 +123,16 @@
   cursor: pointer;
 }
 
-.formulario-subida button:hover {
+.btn-enviar:hover {
   background-color: #555;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 600px) {
+  .botones-subir {
+    flex-direction: column;
+  }
+  .btn-mostrar-form {
+    width: 100%;
+  }
 }
