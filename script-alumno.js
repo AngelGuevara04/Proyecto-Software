@@ -17,8 +17,9 @@ const auth = getAuth(app);
 
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
-    // Si no hay usuario logueado, redirigir a la página principal
-    return window.location.href = 'index.html';
+    // Sin usuario → redirigir a página principal
+    window.location.href = 'index.html';
+    return;
   }
 
   const uid = user.uid;
@@ -28,37 +29,39 @@ onAuthStateChanged(auth, async (user) => {
   if (!perfilSnap.exists() || perfilSnap.data().rol !== 'alumno') {
     alert('Acceso denegado: Solo alumnos pueden ver este panel.');
     await signOut(auth);
-    return window.location.href = 'index.html';
+    window.location.href = 'index.html';
+    return;
   }
 
   // 2) Mostrar nombre en “Bienvenido, <nombre>”
   const nombreAlumno = perfilSnap.data().nombre || '';
   document.getElementById('bienvenida-text').textContent = `Bienvenido(a), ${nombreAlumno}`;
 
-  // 3) Obtener documento “residencias/{uid}”
+  // 3) Obtener documento “residencias/{uid}” y guardarlo en memoria
   const resRef = doc(db, 'residencias', uid);
   const resSnap = await getDoc(resRef);
   if (!resSnap.exists()) {
     console.error('No existe el documento residencias para este alumno.');
     return;
   }
-  // Guardamos la data localmente para poder actualizarla sin recargar
+  // Guardamos la data localmente para poder actualizarla sin recargar la página
   const data = resSnap.data();
 
-  // 4) Mostrar lista de asesores (hasta 2) y cargar mapa de nombres de docentes
+  // 4) Mostrar lista de asesores y crear un mapa uidDocente → nombreDocente
   const listaAsesoresUL = document.getElementById('lista-asesores');
   listaAsesoresUL.innerHTML = '';
 
-  // Preparamos un mapa uidDocente -> nombreDocente
+  // Mapa para nombres de docentes
   const docentesNombres = {};
 
   if (Array.isArray(data.asesores) && data.asesores.length > 0) {
     for (const uidDocente of data.asesores) {
-      // Llenamos la lista visual
       const docSnap = await getDoc(doc(db, 'usuarios', uidDocente));
-      const nombreDocente = docSnap.exists() ? docSnap.data().nombre : '[Docente eliminado]';
-      docentesNombres[uidDocente] = nombreDocente;
+      const nombreDocente = docSnap.exists()
+        ? docSnap.data().nombre
+        : '[Docente eliminado]';
 
+      docentesNombres[uidDocente] = nombreDocente;
       const li = document.createElement('li');
       li.textContent = nombreDocente;
       listaAsesoresUL.appendChild(li);
@@ -69,7 +72,7 @@ onAuthStateChanged(auth, async (user) => {
     listaAsesoresUL.appendChild(li);
   }
 
-  // 5) Función SÍNCRONA para renderizar “Mis Documentos”
+  // 5) Definir función SINCRÓNICA para renderizar “Mis Documentos”
   function renderizarDocumentos() {
     enlacesDiv.innerHTML = ''; // Limpiar contenedor
 
@@ -92,7 +95,7 @@ onAuthStateChanged(auth, async (user) => {
       bloqueAnte.appendChild(spanNoFile);
     }
 
-    // 5.2) Evaluaciones de cada docente (si existen)
+    // 5.2) Evaluaciones de cada docente
     if (
       data.anteproyecto?.evaluacionesDocente &&
       typeof data.anteproyecto.evaluacionesDocente === 'object'
@@ -106,6 +109,7 @@ onAuthStateChanged(auth, async (user) => {
             : estadoDoc === 'rechazado'
             ? `Rechazado por ${nombreDoc}`
             : `Pendiente evaluación de ${nombreDoc}`;
+
         const spanE = document.createElement('span');
         spanE.textContent = textoDoc;
         spanE.classList.add(
@@ -193,6 +197,7 @@ onAuthStateChanged(auth, async (user) => {
             : estadoDoc === 'rechazado'
             ? `Rechazado por ${nombreDoc}`
             : `Pendiente evaluación de ${nombreDoc}`;
+
         const spanE = document.createElement('span');
         spanE.textContent = textoDoc;
         spanE.classList.add(
@@ -277,6 +282,7 @@ onAuthStateChanged(auth, async (user) => {
             : estadoDoc === 'rechazado'
             ? `Rechazado por ${nombreDoc}`
             : `Pendiente evaluación de ${nombreDoc}`;
+
         const spanE = document.createElement('span');
         spanE.textContent = textoDoc;
         spanE.classList.add(
@@ -333,7 +339,7 @@ onAuthStateChanged(auth, async (user) => {
 
   // 6) Referencia al contenedor de enlaces y primera llamada
   const enlacesDiv = document.getElementById('enlaces-documentos');
-  renderizarDocumentos();
+  renderizarDocumentos(); // sin await
 
   // 7) Botón “Cerrar Sesión” → redirigir a index.html
   document.getElementById('logout-button').addEventListener('click', async () => {
@@ -341,7 +347,7 @@ onAuthStateChanged(auth, async (user) => {
     window.location.href = 'index.html';
   });
 
-  // 8) Mostrar / ocultar formularios
+  // 8) Mostrar / ocultar los formularios
   const btnMostrarAnte = document.getElementById('btn-mostrar-ante');
   const btnMostrarRep  = document.getElementById('btn-mostrar-rep');
   const btnMostrarFin  = document.getElementById('btn-mostrar-fin');
@@ -371,18 +377,19 @@ onAuthStateChanged(auth, async (user) => {
     e.preventDefault();
     const file = document.getElementById('archivo').files[0];
     if (!file) {
-      return alert('Debes seleccionar un PDF de anteproyecto.');
+      alert('Debes seleccionar un PDF de anteproyecto.');
+      return;
     }
     try {
       const url = await uploadPdf(file, `anteproyectos/${uid}.pdf`);
-      // Actualizar Firestore: establecemos URL y restablecemos evaluacionesDocente y estado admin
+      // Actualizar Firestore y resetear evaluaciones y estado admin
       await updateDoc(resRef, {
         'anteproyecto.url': url,
         'anteproyecto.evaluacionesDocente': {},
         'anteproyecto.adminEstado': 'pendiente',
         'anteproyecto.adminObs': ''
       });
-      // Actualizar la variable local y refrescar la UI
+      // Actualizar la variable local
       data.anteproyecto.url = url;
       data.anteproyecto.evaluacionesDocente = {};
       data.anteproyecto.adminEstado = 'pendiente';
@@ -401,7 +408,8 @@ onAuthStateChanged(auth, async (user) => {
     e.preventDefault();
     const file = document.getElementById('reporte').files[0];
     if (!file) {
-      return alert('Debes seleccionar un PDF de reporte parcial.');
+      alert('Debes seleccionar un PDF de reporte parcial.');
+      return;
     }
     try {
       const url = await uploadPdf(file, `reportes/${uid}.pdf`);
@@ -429,7 +437,8 @@ onAuthStateChanged(auth, async (user) => {
     e.preventDefault();
     const file = document.getElementById('final').files[0];
     if (!file) {
-      return alert('Debes seleccionar un PDF de proyecto final.');
+      alert('Debes seleccionar un PDF de proyecto final.');
+      return;
     }
     try {
       const url = await uploadPdf(file, `finales/${uid}.pdf`);
