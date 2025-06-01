@@ -305,13 +305,13 @@ form textarea {
 
 #enlaces-documentos table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: collapse;    /* Colapsa los bordes dobles */
   margin-bottom: 1.5rem;
 }
 
 #enlaces-documentos th,
 #enlaces-documentos td {
-  border: 1px solid #ccc;
+  border: 1px solid #ccc;       /* Borde ligero para celda */
   padding: 0.75rem;
   text-align: left;
   vertical-align: top;
@@ -323,7 +323,6 @@ form textarea {
   font-weight: bold;
 }
 
-/* Encabezado de tabla centrado */
 #enlaces-documentos caption {
   caption-side: top;
   text-align: left;
@@ -332,7 +331,6 @@ form textarea {
   font-weight: bold;
 }
 
-/* Celdas de estado con colores */
 .status-aprobado {
   color: #27ae60;
   font-weight: bold;
@@ -348,13 +346,25 @@ form textarea {
   font-weight: bold;
 }
 
-/* En móvil (pantallas muy estrechas), hacer la tabla de desplazamiento horizontal */
 @media (max-width: 480px) {
   #enlaces-documentos {
     overflow-x: auto;
   }
   #enlaces-documentos table {
     display: inline-block;
-    min-width: 480px;
+    min-width: 480px;           /* Permite scroll horizontal en móvil */
   }
+}
+
+/* ===========================
+   TABLAS CON BORDE VISIBLE
+   =========================== */
+
+#enlaces-documentos table {
+  border: 1px solid #999;       /* Borde perimetral bien marcado */
+}
+
+#enlaces-documentos th,
+#enlaces-documentos td {
+  border: 1px solid #999;       /* Borde de cada celda con contraste */
 }
