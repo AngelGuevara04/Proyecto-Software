@@ -37,21 +37,18 @@ onAuthStateChanged(auth, async (user) => {
   const nombreAlumno = perfilSnap.data().nombre || '';
   document.getElementById('bienvenida-text').textContent = `Bienvenido(a), ${nombreAlumno}`;
 
-  // 3) Obtener documento “residencias/{uid}” y guardarlo en memoria
+  // 3) Obtener documento “residencias/{uid}” y guardarlo localmente
   const resRef = doc(db, 'residencias', uid);
   const resSnap = await getDoc(resRef);
   if (!resSnap.exists()) {
     console.error('No existe el documento residencias para este alumno.');
     return;
   }
-  // Guardamos la data localmente para poder actualizarla sin recargar la página
   const data = resSnap.data();
 
-  // 4) Mostrar lista de asesores y crear un mapa uidDocente → nombreDocente
+  // 4) Mostrar lista de asesores y construir mapa uidDocente → nombreDocente
   const listaAsesoresUL = document.getElementById('lista-asesores');
   listaAsesoresUL.innerHTML = '';
-
-  // Mapa para nombres de docentes
   const docentesNombres = {};
 
   if (Array.isArray(data.asesores) && data.asesores.length > 0) {
@@ -60,7 +57,6 @@ onAuthStateChanged(auth, async (user) => {
       const nombreDocente = docSnap.exists()
         ? docSnap.data().nombre
         : '[Docente eliminado]';
-
       docentesNombres[uidDocente] = nombreDocente;
       const li = document.createElement('li');
       li.textContent = nombreDocente;
@@ -72,274 +68,298 @@ onAuthStateChanged(auth, async (user) => {
     listaAsesoresUL.appendChild(li);
   }
 
-  // 5) Definir función SINCRÓNICA para renderizar “Mis Documentos”
+  // 5) Función sincrónica para renderizar tablas en “Mis Documentos”
   function renderizarDocumentos() {
     enlacesDiv.innerHTML = ''; // Limpiar contenedor
 
-    // ——————————— ANTEPROYECTO ———————————
-    const bloqueAnte = document.createElement('div');
-    bloqueAnte.classList.add('enlace-con-estado');
+    // —========== ANTEPROYECTO ==========—
+    const tableAnt = document.createElement('table');
+    tableAnt.innerHTML = `
+      <caption>Anteproyecto</caption>
+      <thead>
+        <tr>
+          <th>Enlace</th>
+          <th>Asesor</th>
+          <th>Estado</th>
+          <th>Comentario</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    `;
+    const tbodyAnt = tableAnt.querySelector('tbody');
 
-    // 5.1) Enlace o texto “Sin archivo subido”
+    // Si existe URL, mostrar enlace en la primera fila:
     if (data.anteproyecto?.url) {
-      const enlaceAnte = document.createElement('a');
-      enlaceAnte.href = data.anteproyecto.url;
-      enlaceAnte.target = '_blank';
-      enlaceAnte.textContent = 'Ver Anteproyecto';
-      enlaceAnte.classList.add('btn-enlace');
-      bloqueAnte.appendChild(enlaceAnte);
-    } else {
-      const spanNoFile = document.createElement('span');
-      spanNoFile.textContent = 'Anteproyecto: Sin archivo subido';
-      spanNoFile.classList.add('status-pendiente');
-      bloqueAnte.appendChild(spanNoFile);
-    }
-
-    // 5.2) Evaluaciones de cada docente
-    if (
-      data.anteproyecto?.evaluacionesDocente &&
-      typeof data.anteproyecto.evaluacionesDocente === 'object'
-    ) {
-      for (const [uidDoc, evalObj] of Object.entries(data.anteproyecto.evaluacionesDocente)) {
-        const nombreDoc = docentesNombres[uidDoc] || '[Docente eliminado]';
-        const estadoDoc = evalObj.estado || 'pendiente';
-        const textoDoc =
-          estadoDoc === 'aprobado'
-            ? `Aprobado por ${nombreDoc}`
-            : estadoDoc === 'rechazado'
-            ? `Rechazado por ${nombreDoc}`
-            : `Pendiente evaluación de ${nombreDoc}`;
-
-        const spanE = document.createElement('span');
-        spanE.textContent = textoDoc;
-        spanE.classList.add(
-          estadoDoc === 'aprobado'
-            ? 'status-aprobado'
-            : estadoDoc === 'rechazado'
-            ? 'status-rechazado'
-            : 'status-pendiente'
-        );
-        bloqueAnte.appendChild(spanE);
-      }
-    }
-
-    // 5.3) Estado del Admin (si existe)
-    if (
-      data.anteproyecto?.adminEstado &&
-      data.anteproyecto.adminEstado !== 'pendiente'
-    ) {
-      const textoAdm =
-        data.anteproyecto.adminEstado === 'aprobado'
-          ? 'Aprobado por Admin'
-          : 'Rechazado por Admin';
-      const spanAdmin = document.createElement('span');
-      spanAdmin.textContent = textoAdm;
-      spanAdmin.classList.add(
-        data.anteproyecto.adminEstado === 'aprobado'
-          ? 'status-aprobado'
-          : 'status-rechazado'
-      );
-      bloqueAnte.appendChild(spanAdmin);
-    }
-
-    // 5.4) Comentarios de cada docente (si existen)
-    if (
-      data.anteproyecto?.evaluacionesDocente &&
-      typeof data.anteproyecto.evaluacionesDocente === 'object'
-    ) {
-      for (const [uidDoc, evalObj] of Object.entries(data.anteproyecto.evaluacionesDocente)) {
-        if (evalObj.obs) {
+      const enlaceCell = `<a href="${data.anteproyecto.url}" target="_blank">Descargar PDF</a>`;
+      // Para cada asesor, dibujar su fila
+      if (
+        data.anteproyecto.evaluacionesDocente &&
+        typeof data.anteproyecto.evaluacionesDocente === 'object'
+      ) {
+        for (const uidDoc of Object.keys(data.anteproyecto.evaluacionesDocente)) {
+          const evalObj = data.anteproyecto.evaluacionesDocente[uidDoc];
           const nombreDoc = docentesNombres[uidDoc] || '[Docente eliminado]';
-          const pObs = document.createElement('p');
-          pObs.innerHTML = `<strong>Comentario de ${nombreDoc}:</strong> ${evalObj.obs}`;
-          bloqueAnte.appendChild(pObs);
+          const estadoDoc = evalObj.estado || 'pendiente';
+          const textoEstado =
+            estadoDoc === 'aprobado'
+              ? 'Aprobado'
+              : estadoDoc === 'rechazado'
+              ? 'Rechazado'
+              : 'Pendiente';
+          const claseEstado =
+            estadoDoc === 'aprobado'
+              ? 'status-aprobado'
+              : estadoDoc === 'rechazado'
+              ? 'status-rechazado'
+              : 'status-pendiente';
+          const comentarioDoc = evalObj.obs || '';
+
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${enlaceCell}</td>
+            <td>${nombreDoc}</td>
+            <td class="${claseEstado}">${textoEstado}</td>
+            <td>${comentarioDoc}</td>
+          `;
+          tbodyAnt.appendChild(row);
         }
+      } else {
+        // No hay evaluaciones por docentes → mostrar “Pendiente” para todos los asesores asignados
+        data.asesores.forEach(uidDoc => {
+          const nombreDoc = docentesNombres[uidDoc] || '[Docente eliminado]';
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${enlaceCell}</td>
+            <td>${nombreDoc}</td>
+            <td class="status-pendiente">Pendiente</td>
+            <td></td>
+          `;
+          tbodyAnt.appendChild(row);
+        });
       }
+
+      // Ahora, si el Admin ya evaluó, añadir fila separada al final
+      if (data.anteproyecto.adminEstado && data.anteproyecto.adminEstado !== 'pendiente') {
+        const textoAdm =
+          data.anteproyecto.adminEstado === 'aprobado'
+            ? 'Aprobado'
+            : 'Rechazado';
+        const claseAdm =
+          data.anteproyecto.adminEstado === 'aprobado'
+            ? 'status-aprobado'
+            : 'status-rechazado';
+        const comentarioAdm = data.anteproyecto.adminObs || '';
+        const rowAdm = document.createElement('tr');
+        rowAdm.innerHTML = `
+          <td></td>
+          <td><strong>Admin</strong></td>
+          <td class="${claseAdm}">${textoAdm}</td>
+          <td>${comentarioAdm}</td>
+        `;
+        tbodyAnt.appendChild(rowAdm);
+      }
+    } else {
+      // Si no hay URL, poner una sola fila indicando “Sin archivo subido”
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td><em>Sin archivo</em></td>
+        <td colspan="3" class="status-pendiente">Ningún archivo subido aún</td>
+      `;
+      tbodyAnt.appendChild(row);
     }
 
-    // 5.5) Comentario del Admin (si existe)
-    if (data.anteproyecto?.adminObs) {
-      const pObsAdm = document.createElement('p');
-      pObsAdm.innerHTML = `<strong>Comentario Admin:</strong> ${data.anteproyecto.adminObs}`;
-      bloqueAnte.appendChild(pObsAdm);
-    }
+    enlacesDiv.appendChild(tableAnt);
 
-    enlacesDiv.appendChild(bloqueAnte);
-
-    // ——————————— REPORTE PARCIAL ———————————
-    const bloqueRep = document.createElement('div');
-    bloqueRep.classList.add('enlace-con-estado');
+    // —========== REPORTE PARCIAL ==========—
+    const tableRep = document.createElement('table');
+    tableRep.innerHTML = `
+      <caption>Reporte Parcial</caption>
+      <thead>
+        <tr>
+          <th>Enlace</th>
+          <th>Asesor</th>
+          <th>Estado</th>
+          <th>Comentario</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    `;
+    const tbodyRep = tableRep.querySelector('tbody');
 
     if (data.reporteParcial?.url) {
-      const enlaceRep = document.createElement('a');
-      enlaceRep.href = data.reporteParcial.url;
-      enlaceRep.target = '_blank';
-      enlaceRep.textContent = 'Ver Reporte Parcial';
-      enlaceRep.classList.add('btn-enlace');
-      bloqueRep.appendChild(enlaceRep);
-    } else {
-      const spanNoFileR = document.createElement('span');
-      spanNoFileR.textContent = 'Reporte Parcial: Sin archivo subido';
-      spanNoFileR.classList.add('status-pendiente');
-      bloqueRep.appendChild(spanNoFileR);
-    }
-
-    if (
-      data.reporteParcial?.evaluacionesDocente &&
-      typeof data.reporteParcial.evaluacionesDocente === 'object'
-    ) {
-      for (const [uidDoc, evalObj] of Object.entries(data.reporteParcial.evaluacionesDocente)) {
-        const nombreDoc = docentesNombres[uidDoc] || '[Docente eliminado]';
-        const estadoDoc = evalObj.estado || 'pendiente';
-        const textoDoc =
-          estadoDoc === 'aprobado'
-            ? `Aprobado por ${nombreDoc}`
-            : estadoDoc === 'rechazado'
-            ? `Rechazado por ${nombreDoc}`
-            : `Pendiente evaluación de ${nombreDoc}`;
-
-        const spanE = document.createElement('span');
-        spanE.textContent = textoDoc;
-        spanE.classList.add(
-          estadoDoc === 'aprobado'
-            ? 'status-aprobado'
-            : estadoDoc === 'rechazado'
-            ? 'status-rechazado'
-            : 'status-pendiente'
-        );
-        bloqueRep.appendChild(spanE);
-      }
-    }
-
-    if (
-      data.reporteParcial?.adminEstado &&
-      data.reporteParcial.adminEstado !== 'pendiente'
-    ) {
-      const textoAdm =
-        data.reporteParcial.adminEstado === 'aprobado'
-          ? 'Aprobado por Admin'
-          : 'Rechazado por Admin';
-      const spanAdminR = document.createElement('span');
-      spanAdminR.textContent = textoAdm;
-      spanAdminR.classList.add(
-        data.reporteParcial.adminEstado === 'aprobado'
-          ? 'status-aprobado'
-          : 'status-rechazado'
-      );
-      bloqueRep.appendChild(spanAdminR);
-    }
-
-    if (
-      data.reporteParcial?.evaluacionesDocente &&
-      typeof data.reporteParcial.evaluacionesDocente === 'object'
-    ) {
-      for (const [uidDoc, evalObj] of Object.entries(data.reporteParcial.evaluacionesDocente)) {
-        if (evalObj.obs) {
+      const enlaceCell = `<a href="${data.reporteParcial.url}" target="_blank">Descargar PDF</a>`;
+      if (
+        data.reporteParcial.evaluacionesDocente &&
+        typeof data.reporteParcial.evaluacionesDocente === 'object'
+      ) {
+        for (const uidDoc of Object.keys(data.reporteParcial.evaluacionesDocente)) {
+          const evalObj = data.reporteParcial.evaluacionesDocente[uidDoc];
           const nombreDoc = docentesNombres[uidDoc] || '[Docente eliminado]';
-          const pObs = document.createElement('p');
-          pObs.innerHTML = `<strong>Comentario de ${nombreDoc}:</strong> ${evalObj.obs}`;
-          bloqueRep.appendChild(pObs);
+          const estadoDoc = evalObj.estado || 'pendiente';
+          const textoEstado =
+            estadoDoc === 'aprobado'
+              ? 'Aprobado'
+              : estadoDoc === 'rechazado'
+              ? 'Rechazado'
+              : 'Pendiente';
+          const claseEstado =
+            estadoDoc === 'aprobado'
+              ? 'status-aprobado'
+              : estadoDoc === 'rechazado'
+              ? 'status-rechazado'
+              : 'status-pendiente';
+          const comentarioDoc = evalObj.obs || '';
+
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${enlaceCell}</td>
+            <td>${nombreDoc}</td>
+            <td class="${claseEstado}">${textoEstado}</td>
+            <td>${comentarioDoc}</td>
+          `;
+          tbodyRep.appendChild(row);
         }
+      } else {
+        data.asesores.forEach(uidDoc => {
+          const nombreDoc = docentesNombres[uidDoc] || '[Docente eliminado]';
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${enlaceCell}</td>
+            <td>${nombreDoc}</td>
+            <td class="status-pendiente">Pendiente</td>
+            <td></td>
+          `;
+          tbodyRep.appendChild(row);
+        });
       }
+
+      if (data.reporteParcial.adminEstado && data.reporteParcial.adminEstado !== 'pendiente') {
+        const textoAdm =
+          data.reporteParcial.adminEstado === 'aprobado'
+            ? 'Aprobado'
+            : 'Rechazado';
+        const claseAdm =
+          data.reporteParcial.adminEstado === 'aprobado'
+            ? 'status-aprobado'
+            : 'status-rechazado';
+        const comentarioAdm = data.reporteParcial.adminObs || '';
+        const rowAdm = document.createElement('tr');
+        rowAdm.innerHTML = `
+          <td></td>
+          <td><strong>Admin</strong></td>
+          <td class="${claseAdm}">${textoAdm}</td>
+          <td>${comentarioAdm}</td>
+        `;
+        tbodyRep.appendChild(rowAdm);
+      }
+    } else {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td><em>Sin archivo</em></td>
+        <td colspan="3" class="status-pendiente">Ningún archivo subido aún</td>
+      `;
+      tbodyRep.appendChild(row);
     }
 
-    if (data.reporteParcial?.adminObs) {
-      const pObsAdmR = document.createElement('p');
-      pObsAdmR.innerHTML = `<strong>Comentario Admin:</strong> ${data.reporteParcial.adminObs}`;
-      bloqueRep.appendChild(pObsAdmR);
-    }
+    enlacesDiv.appendChild(tableRep);
 
-    enlacesDiv.appendChild(bloqueRep);
-
-    // ——————————— PROYECTO FINAL ———————————
-    const bloqueFin = document.createElement('div');
-    bloqueFin.classList.add('enlace-con-estado');
+    // —========== PROYECTO FINAL ==========—
+    const tableFin = document.createElement('table');
+    tableFin.innerHTML = `
+      <caption>Proyecto Final</caption>
+      <thead>
+        <tr>
+          <th>Enlace</th>
+          <th>Asesor</th>
+          <th>Estado</th>
+          <th>Comentario</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    `;
+    const tbodyFin = tableFin.querySelector('tbody');
 
     if (data.proyectoFinal?.url) {
-      const enlaceFin = document.createElement('a');
-      enlaceFin.href = data.proyectoFinal.url;
-      enlaceFin.target = '_blank';
-      enlaceFin.textContent = 'Ver Proyecto Final';
-      enlaceFin.classList.add('btn-enlace');
-      bloqueFin.appendChild(enlaceFin);
-    } else {
-      const spanNoFileF = document.createElement('span');
-      spanNoFileF.textContent = 'Proyecto Final: Sin archivo subido';
-      spanNoFileF.classList.add('status-pendiente');
-      bloqueFin.appendChild(spanNoFileF);
-    }
-
-    if (
-      data.proyectoFinal?.evaluacionesDocente &&
-      typeof data.proyectoFinal.evaluacionesDocente === 'object'
-    ) {
-      for (const [uidDoc, evalObj] of Object.entries(data.proyectoFinal.evaluacionesDocente)) {
-        const nombreDoc = docentesNombres[uidDoc] || '[Docente eliminado]';
-        const estadoDoc = evalObj.estado || 'pendiente';
-        const textoDoc =
-          estadoDoc === 'aprobado'
-            ? `Aprobado por ${nombreDoc}`
-            : estadoDoc === 'rechazado'
-            ? `Rechazado por ${nombreDoc}`
-            : `Pendiente evaluación de ${nombreDoc}`;
-
-        const spanE = document.createElement('span');
-        spanE.textContent = textoDoc;
-        spanE.classList.add(
-          estadoDoc === 'aprobado'
-            ? 'status-aprobado'
-            : estadoDoc === 'rechazado'
-            ? 'status-rechazado'
-            : 'status-pendiente'
-        );
-        bloqueFin.appendChild(spanE);
-      }
-    }
-
-    if (
-      data.proyectoFinal?.adminEstado &&
-      data.proyectoFinal.adminEstado !== 'pendiente'
-    ) {
-      const textoAdm =
-        data.proyectoFinal.adminEstado === 'aprobado'
-          ? 'Aprobado por Admin'
-          : 'Rechazado por Admin';
-      const spanAdminF = document.createElement('span');
-      spanAdminF.textContent = textoAdm;
-      spanAdminF.classList.add(
-        data.proyectoFinal.adminEstado === 'aprobado'
-          ? 'status-aprobado'
-          : 'status-rechazado'
-      );
-      bloqueFin.appendChild(spanAdminF);
-    }
-
-    if (
-      data.proyectoFinal?.evaluacionesDocente &&
-      typeof data.proyectoFinal.evaluacionesDocente === 'object'
-    ) {
-      for (const [uidDoc, evalObj] of Object.entries(data.proyectoFinal.evaluacionesDocente)) {
-        if (evalObj.obs) {
+      const enlaceCell = `<a href="${data.proyectoFinal.url}" target="_blank">Descargar PDF</a>`;
+      if (
+        data.proyectoFinal.evaluacionesDocente &&
+        typeof data.proyectoFinal.evaluacionesDocente === 'object'
+      ) {
+        for (const uidDoc of Object.keys(data.proyectoFinal.evaluacionesDocente)) {
+          const evalObj = data.proyectoFinal.evaluacionesDocente[uidDoc];
           const nombreDoc = docentesNombres[uidDoc] || '[Docente eliminado]';
-          const pObs = document.createElement('p');
-          pObs.innerHTML = `<strong>Comentario de ${nombreDoc}:</strong> ${evalObj.obs}`;
-          bloqueFin.appendChild(pObs);
+          const estadoDoc = evalObj.estado || 'pendiente';
+          const textoEstado =
+            estadoDoc === 'aprobado'
+              ? 'Aprobado'
+              : estadoDoc === 'rechazado'
+              ? 'Rechazado'
+              : 'Pendiente';
+          const claseEstado =
+            estadoDoc === 'aprobado'
+              ? 'status-aprobado'
+              : estadoDoc === 'rechazado'
+              ? 'status-rechazado'
+              : 'status-pendiente';
+          const comentarioDoc = evalObj.obs || '';
+
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${enlaceCell}</td>
+            <td>${nombreDoc}</td>
+            <td class="${claseEstado}">${textoEstado}</td>
+            <td>${comentarioDoc}</td>
+          `;
+          tbodyFin.appendChild(row);
         }
+      } else {
+        data.asesores.forEach(uidDoc => {
+          const nombreDoc = docentesNombres[uidDoc] || '[Docente eliminado]';
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${enlaceCell}</td>
+            <td>${nombreDoc}</td>
+            <td class="status-pendiente">Pendiente</td>
+            <td></td>
+          `;
+          tbodyFin.appendChild(row);
+        });
       }
+
+      if (data.proyectoFinal.adminEstado && data.proyectoFinal.adminEstado !== 'pendiente') {
+        const textoAdm =
+          data.proyectoFinal.adminEstado === 'aprobado'
+            ? 'Aprobado'
+            : 'Rechazado';
+        const claseAdm =
+          data.proyectoFinal.adminEstado === 'aprobado'
+            ? 'status-aprobado'
+            : 'status-rechazado';
+        const comentarioAdm = data.proyectoFinal.adminObs || '';
+        const rowAdm = document.createElement('tr');
+        rowAdm.innerHTML = `
+          <td></td>
+          <td><strong>Admin</strong></td>
+          <td class="${claseAdm}">${textoAdm}</td>
+          <td>${comentarioAdm}</td>
+        `;
+        tbodyFin.appendChild(rowAdm);
+      }
+    } else {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td><em>Sin archivo</em></td>
+        <td colspan="3" class="status-pendiente">Ningún archivo subido aún</td>
+      `;
+      tbodyFin.appendChild(row);
     }
 
-    if (data.proyectoFinal?.adminObs) {
-      const pObsAdmF = document.createElement('p');
-      pObsAdmF.innerHTML = `<strong>Comentario Admin:</strong> ${data.proyectoFinal.adminObs}`;
-      bloqueFin.appendChild(pObsAdmF);
-    }
-
-    enlacesDiv.appendChild(bloqueFin);
+    enlacesDiv.appendChild(tableFin);
   }
 
-  // 6) Referencia al contenedor de enlaces y primera llamada
+  // 6) Referencia al contenedor y primera llamada
   const enlacesDiv = document.getElementById('enlaces-documentos');
-  renderizarDocumentos(); // sin await
+  renderizarDocumentos();
 
   // 7) Botón “Cerrar Sesión” → redirigir a index.html
   document.getElementById('logout-button').addEventListener('click', async () => {
@@ -347,7 +367,7 @@ onAuthStateChanged(auth, async (user) => {
     window.location.href = 'index.html';
   });
 
-  // 8) Mostrar / ocultar los formularios
+  // 8) Mostrar / ocultar formularios
   const btnMostrarAnte = document.getElementById('btn-mostrar-ante');
   const btnMostrarRep  = document.getElementById('btn-mostrar-rep');
   const btnMostrarFin  = document.getElementById('btn-mostrar-fin');
@@ -382,14 +402,12 @@ onAuthStateChanged(auth, async (user) => {
     }
     try {
       const url = await uploadPdf(file, `anteproyectos/${uid}.pdf`);
-      // Actualizar Firestore y resetear evaluaciones y estado admin
       await updateDoc(resRef, {
         'anteproyecto.url': url,
         'anteproyecto.evaluacionesDocente': {},
         'anteproyecto.adminEstado': 'pendiente',
         'anteproyecto.adminObs': ''
       });
-      // Actualizar la variable local
       data.anteproyecto.url = url;
       data.anteproyecto.evaluacionesDocente = {};
       data.anteproyecto.adminEstado = 'pendiente';
