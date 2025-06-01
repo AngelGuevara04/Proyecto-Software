@@ -2,83 +2,72 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Panel de Alumno</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css" />
 </head>
-
 <body>
   <!-- ===== HEADER ===== -->
-  <header class="header-alumno">
+  <header>
     <h1>Panel de Alumno</h1>
     <button id="logout-button" class="btn-logout">Cerrar Sesión</button>
   </header>
 
   <!-- ===== MAIN ===== -->
-  <main class="main-alumno">
-    <!-- === 1) Bienvenida y Nombre del Alumno === -->
-    <section id="seccion-bienvenida" class="seccion-bienvenida">
+  <main>
+    <!-- 1) Bienvenida y Asesores -->
+    <section id="seccion-bienvenida">
       <h2 id="bienvenida-text">Bienvenido(a), [Nombre]</h2>
       <div id="asesores-container">
         <strong>Asesores asignados:</strong>
-        <ul id="lista-asesores">
-          <!-- Aquí se inyectarán hasta 2 <li> con nombres de asesores -->
-        </ul>
+        <ul id="lista-asesores"></ul>
       </div>
       <hr />
     </section>
 
-    <!-- === 2) Mis Documentos === -->
-    <section id="seccion-enlaces" class="seccion-enlaces">
+    <!-- 2) Mis Documentos (aquí inyectará tablas) -->
+    <section id="seccion-enlaces">
       <h2>Mis Documentos</h2>
-      <div id="enlaces-documentos">
-        <!-- Aquí el script inyectará todo: enlaces + estado de cada docente + estado Admin + comentarios -->
-      </div>
+      <div id="enlaces-documentos"></div>
       <hr />
     </section>
 
-    <!-- === 3) Subir Documentos === -->
-    <section id="seccion-subida" class="seccion-subida">
+    <!-- 3) Subir Documentos -->
+    <section id="seccion-subida">
       <h2>Subir Documentos</h2>
-
-      <!-- Botones para desplegar cada formulario -->
       <div class="botones-subir">
         <button id="btn-mostrar-ante" class="btn-mostrar-form">Subir Anteproyecto</button>
         <button id="btn-mostrar-rep"  class="btn-mostrar-form">Subir Reporte Parcial</button>
         <button id="btn-mostrar-fin"  class="btn-mostrar-form">Subir Proyecto Final</button>
       </div>
-
-      <!-- Formulario Anteproyecto (oculto por defecto) -->
-      <div id="form-ante-container" class="formulario-subida" style="display: none;">
-        <form id="form-anteproyecto">
-          <label for="archivo"><strong>Anteproyecto:</strong></label><br />
-          <input type="file" accept="application/pdf" id="archivo" required /><br />
-          <button type="submit" class="btn-enviar">Subir Anteproyecto</button>
-        </form>
-      </div>
-
-      <!-- Formulario Reporte Parcial (oculto por defecto) -->
-      <div id="form-rep-container" class="formulario-subida" style="display: none;">
-        <form id="form-reporte">
-          <label for="reporte"><strong>Reporte Parcial:</strong></label><br />
-          <input type="file" accept="application/pdf" id="reporte" required /><br />
-          <button type="submit" class="btn-enviar">Subir Reporte Parcial</button>
-        </form>
-      </div>
-
-      <!-- Formulario Proyecto Final (oculto por defecto) -->
-      <div id="form-fin-container" class="formulario-subida" style="display: none;">
-        <form id="form-final">
-          <label for="final"><strong>Proyecto Final:</strong></label><br />
-          <input type="file" accept="application/pdf" id="final" required /><br />
-          <button type="submit" class="btn-enviar">Subir Proyecto Final</button>
-        </form>
+      <div id="forms-wrapper">
+        <div id="form-ante-container" class="formulario-subida" style="display:none;">
+          <form id="form-anteproyecto">
+            <label for="archivo"><strong>Anteproyecto:</strong></label><br>
+            <input type="file" accept="application/pdf" id="archivo" required><br>
+            <button type="submit" class="btn-enviar">Subir Anteproyecto</button>
+          </form>
+        </div>
+        <div id="form-rep-container" class="formulario-subida" style="display:none;">
+          <form id="form-reporte">
+            <label for="reporte"><strong>Reporte Parcial:</strong></label><br>
+            <input type="file" accept="application/pdf" id="reporte" required><br>
+            <button type="submit" class="btn-enviar">Subir Reporte Parcial</button>
+          </form>
+        </div>
+        <div id="form-fin-container" class="formulario-subida" style="display:none;">
+          <form id="form-final">
+            <label for="final"><strong>Proyecto Final:</strong></label><br>
+            <input type="file" accept="application/pdf" id="final" required><br>
+            <button type="submit" class="btn-enviar">Subir Proyecto Final</button>
+          </form>
+        </div>
       </div>
     </section>
   </main>
 
-  <!-- ===== SCRIPTS ===== -->
+  <!-- SCRIPTS -->
   <script type="module" src="firebase-config.js"></script>
   <script type="module" src="script-alumno.js"></script>
 </body>
