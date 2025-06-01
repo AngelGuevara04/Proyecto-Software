@@ -1,134 +1,161 @@
 // script-alumno.js
-import { app, db, storage } from './firebase-config.js';
-import {
-  getAuth,
-  onAuthStateChanged,
-  signOut
+
+import { app, db } from './firebase-config.js';
+import { 
+  getAuth, 
+  onAuthStateChanged, 
+  signOut 
 } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js';
-import {
-  doc,
-  getDoc,
-  updateDoc,
-  arrayUnion
+import { 
+  doc, 
+  getDoc, 
+  updateDoc 
 } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
-import {
-  ref,
-  uploadBytes,
-  getDownloadURL
-} from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-storage.js';
+import { uploadPdf } from './storage-helper.js';
 
 const auth = getAuth(app);
 
-onAuthStateChanged(auth, async user => {
-  if (!user) return window.location.href = 'login.html';
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    // Si no hay usuario logueado, redirigimos a login
+    return window.location.href = 'login.html';
+  }
 
-  // Verificar rol
-  const perfilSnap = await getDoc(doc(db, 'usuarios', user.uid));
+  const uid = user.uid;
+
+  // 1. Verificar que el usuario tenga rol = 'alumno' en Firestore
+  const perfilSnap = await getDoc(doc(db, 'usuarios', uid));
   if (!perfilSnap.exists() || perfilSnap.data().rol !== 'alumno') {
     alert('Acceso denegado: solo alumnos pueden subir documentos.');
     await signOut(auth);
     return window.location.href = 'login.html';
   }
 
-  // Cerrar sesión
+  // 2. Referencia al documento "residencias/{uid}" en Firestore
+  //    (Asumimos que dicho documento ya existe.
+  //     Si aún no lo creaste, usa el código de subir-documentos.js)
+  const resRef = doc(db, 'residencias', uid);
+
+  // 3. BOTÓN de Cerrar Sesión
   document.getElementById('logout-button')
     .addEventListener('click', async () => {
       await signOut(auth);
       window.location.href = 'login.html';
     });
 
-  const uid      = user.uid;
-  const resRef   = doc(db, 'residencias', uid);
-  const estadoEl = document.getElementById('estado-proyecto');
-  const docAsig  = document.getElementById('docente-asignado');
-  const admAsig  = document.getElementById('admin-asignado');
-
-  // Cargar datos de asignaciones
-  const residSnap = await getDoc(resRef);
-  if (residSnap.exists()) {
-    const d = residSnap.data();
-
-    // Docente asignado
-    if (d.asesorId) {
-      const ds = await getDoc(doc(db, 'usuarios', d.asesorId));
-      docAsig.textContent = ds.exists() ? ds.data().nombre : d.asesorId;
-    } else {
-      docAsig.textContent = 'No asignado';
-    }
-
-    // Administrador asignado
-    if (d.adminId) {
-      const as = await getDoc(doc(db, 'usuarios', d.adminId));
-      admAsig.textContent = as.exists() ? as.data().nombre : d.adminId;
-    } else {
-      admAsig.textContent = 'No asignado';
-    }
-  }
-
-  // Función para mostrar estado
-  const actualizarEstado = async () => {
-    const snap = await getDoc(resRef);
-    if (!snap.exists()) return;
-    const d = snap.data();
-    estadoEl.innerHTML = `
-      <p>Anteproyecto: ${d.anteproyectoEstado.docente} / ${d.anteproyectoEstado.admin}</p>
-      <p>Reportes subidos: ${d.reportes.length}</p>
-      <p>Proyecto Final: ${d.proyectoFinal.docente} / ${d.proyectoFinal.admin}</p>
-    `;
-  };
-  await actualizarEstado();
-
-  // Subir Anteproyecto
+  // 4. FORMULARIO de Anteproyecto
   document.getElementById('form-anteproyecto')
-    .addEventListener('submit', async e => {
+    .addEventListener('submit', async (e) => {
       e.preventDefault();
-      const file  = e.target.archivo.files[0];
-      const stRef = ref(storage, `anteproyectos/${uid}.pdf`);
-      await uploadBytes(stRef, file);
-      const url = await getDownloadURL(stRef);
-      await updateDoc(resRef, {
-        anteproyectoURL: url,
-        anteproyectoEstado: { docente: 'pendiente', admin: 'pendiente', obsDocente: '', obsAdmin: '' }
-      });
-      alert('Anteproyecto subido.');
-      await actualizarEstado();
+
+      const file = document.getElementById('archivo').files[0];
+      if (!file) {
+        return alert('Debes seleccionar un PDF de anteproyecto.');
+      }
+
+      try {
+        // Subir el PDF a Supabase (ruta: anteproyectos/{uid}.pdf)
+        const url = await uploadPdf(file, `anteproyectos/${uid}.pdf`);
+
+        // Actualizar Firestore
+        await updateDoc(resRef, {
+          anteproyecto: {
+            url: url,
+            docente: 'pendiente',
+            admin: 'pendiente',
+            obsDocente: '',
+            obsAdmin: ''
+          }
+        });
+
+        alert('Anteproyecto subido correctamente.');
+      } catch (error) {
+        console.error(error);
+        alert('Error al subir anteproyecto: ' + error.message);
+      }
     });
 
-  // Subir Reporte Parcial
+  // 5. FORMULARIO de Reporte Parcial
   document.getElementById('form-reporte')
-    .addEventListener('submit', async e => {
+    .addEventListener('submit', async (e) => {
       e.preventDefault();
-      const file  = e.target.reporte.files[0];
-      const ts    = Date.now();
-      const stRef = ref(storage, `reportes/${uid}_${ts}.pdf`);
-      await uploadBytes(stRef, file);
-      const url = await getDownloadURL(stRef);
-      await updateDoc(resRef, {
-        reportes: arrayUnion({
-          url,
-          fecha: new Date().toISOString(),
-          docente: 'pendiente',
-          admin: 'pendiente',
-          obsDocente: '',
-          obsAdmin: ''
-        })
-      });
-      alert('Reporte subido.');
-      await actualizarEstado();
+
+      const file = document.getElementById('reporte').files[0];
+      if (!file) {
+        return alert('Debes seleccionar un PDF de reporte parcial.');
+      }
+
+      try {
+        // Subir el PDF a Supabase (ruta: reportes/{uid}.pdf)
+        const url = await uploadPdf(file, `reportes/${uid}.pdf`);
+
+        // Actualizar Firestore
+        await updateDoc(resRef, {
+          reporteParcial: {
+            url: url,
+            docente: 'pendiente',
+            admin: 'pendiente',
+            obsDocente: '',
+            obsAdmin: ''
+          }
+        });
+
+        alert('Reporte parcial subido correctamente.');
+      } catch (error) {
+        console.error(error);
+        alert('Error al subir reporte: ' + error.message);
+      }
     });
 
-  // Subir Proyecto Final
+  // 6. FORMULARIO de Proyecto Final
   document.getElementById('form-final')
-    .addEventListener('submit', async e => {
+    .addEventListener('submit', async (e) => {
       e.preventDefault();
-      const file  = e.target.final.files[0];
-      const stRef = ref(storage, `finales/${uid}.pdf`);
-      await uploadBytes(stRef, file);
-      const url = await getDownloadURL(stRef);
-      await updateDoc(resRef, {
-        proyectoFinal: { url, docente: 'pendiente', admin: 'pendiente', obsDocente: '', obsAdmin: '' }
-      });
-      alert('Proyecto final subido.');
-      await actualizarEstado();
+
+      const file = document.getElementById('final').files[0];
+      if (!file) {
+        return alert('Debes seleccionar un PDF de proyecto final.');
+      }
+
+      try {
+        // Subir el PDF a Supabase (ruta: finales/{uid}.pdf)
+        const url = await uploadPdf(file, `finales/${uid}.pdf`);
+
+        // Actualizar Firestore
+        await updateDoc(resRef, {
+          proyectoFinal: {
+            url: url,
+            docente: 'pendiente',
+            admin: 'pendiente',
+            obsDocente: '',
+            obsAdmin: ''
+          }
+        });
+
+        alert('Proyecto final subido correctamente.');
+      } catch (error) {
+        console.error(error);
+        alert('Error al subir proyecto final: ' + error.message);
+      }
     });
+
+  // 7. (Opcional) Mostrar enlaces existentes en la UI
+  //    Si ya hay URLs guardadas en Firestore, puedes inyectarlas en un <a>:
+  //
+  // const resSnap = await getDoc(resRef);
+  // if (resSnap.exists()) {
+  //   const data = resSnap.data();
+  //   if (data.anteproyecto?.url) {
+  //     document.getElementById('link-anteproyecto').href = data.anteproyecto.url;
+  //     document.getElementById('link-anteproyecto').textContent = 'Ver anteproyecto';
+  //   }
+  //   if (data.reporteParcial?.url) {
+  //     document.getElementById('link-reporte').href = data.reporteParcial.url;
+  //     document.getElementById('link-reporte').textContent = 'Ver reporte';
+  //   }
+  //   if (data.proyectoFinal?.url) {
+  //     document.getElementById('link-final').href = data.proyectoFinal.url;
+  //     document.getElementById('link-final').textContent = 'Ver proyecto final';
+  //   }
+  // }
 });

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Subir Documentos</title>
+  <!-- Carga el script que contiene la lógica para crear el doc en Firestore + subir PDF a Supabase -->
+  <script type="module" src="subir-documentos.js"></script>
+</head>
+<body>
+  <h1>Crear registro de Residencia y subir archivos</h1>
+  <form id="subir-form">
+    <label for="anteproyecto">PDF Anteproyecto:</label>
+    <input type="file" id="anteproyecto" accept="application/pdf" required /><br/><br/>
+
+    <label for="proyecto-final">PDF Proyecto Final:</label>
+    <input type="file" id="proyecto-final" accept="application/pdf" required /><br/><br/>
+
+    <button type="submit">Crear registro y subir</button>
+  </form>
+</body>
+</html>

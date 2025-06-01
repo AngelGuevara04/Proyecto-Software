@@ -1,55 +1,39 @@
-<!-- dashboard-alumno.html -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Residencias - Alumno</title>
-  <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <title>Dashboard Alumno</title>
+  <script type="module" src="script-alumno.js"></script>
 </head>
 <body>
-  <header>
-    <img src="logo.jpg" alt="Logo">
-    <h1>Panel de Alumno</h1>
-    <button id="logout-button">Cerrar Sesión</button>
-  </header>
-  <main>
-    <section>
-      <h2>Mis Asignaciones</h2>
-      <p>Docente asignado: <span id="docente-asignado">Cargando...</span></p>
-      <p>Administrador asignado: <span id="admin-asignado">Cargando...</span></p>
-    </section>
-    <section>
-      <h2>Estado del Proyecto</h2>
-      <div id="estado-proyecto">Cargando estado...</div>
-    </section>
-    <section>
-      <h2>Subir Anteproyecto</h2>
-      <form id="form-anteproyecto">
-        <input type="file" id="archivo" accept="application/pdf" required>
-        <button type="submit">Enviar Anteproyecto</button>
-      </form>
-    </section>
-    <section>
-      <h2>Subir Reporte Parcial</h2>
-      <form id="form-reporte">
-        <input type="file" id="reporte" accept="application/pdf" required>
-        <button type="submit">Enviar Reporte</button>
-      </form>
-    </section>
-    <section>
-      <h2>Subir Proyecto Final</h2>
-      <form id="form-final">
-        <input type="file" id="final" accept="application/pdf" required>
-        <button type="submit">Enviar Proyecto Final</button>
-      </form>
-    </section>
-  </main>
-  <footer>
-    <p>&copy; 2025 Sistema de Residencias Profesionales</p>
-  </footer>
+  <!-- Botón cerrar sesión -->
+  <button id="logout-button">Cerrar Sesión</button>
 
-  <script type="module" src="firebase-config.js"></script>
-  <script type="module" src="script-alumno.js"></script>
+  <!-- Formulario Anteproyecto -->
+  <form id="form-anteproyecto">
+    <label for="archivo">Selecciona tu PDF de Anteproyecto:</label>
+    <input type="file" accept="application/pdf" id="archivo" required />
+    <button type="submit">Subir Anteproyecto</button>
+  </form>
+  <!-- (Opcional: Enlace para ver anteproyecto ya subido) -->
+  <a id="link-anteproyecto" href="#" target="_blank"></a>
+
+  <!-- Formulario Reporte Parcial -->
+  <form id="form-reporte">
+    <label for="reporte">Selecciona tu PDF de Reporte Parcial:</label>
+    <input type="file" accept="application/pdf" id="reporte" required />
+    <button type="submit">Subir Reporte Parcial</button>
+  </form>
+  <!-- (Opcional: Enlace para ver reporte ya subido) -->
+  <a id="link-reporte" href="#" target="_blank"></a>
+
+  <!-- Formulario Proyecto Final -->
+  <form id="form-final">
+    <label for="final">Selecciona tu PDF de Proyecto Final:</label>
+    <input type="file" accept="application/pdf" id="final" required />
+    <button type="submit">Subir Proyecto Final</button>
+  </form>
+  <!-- (Opcional: Enlace para ver proyecto final ya subido) -->
+  <a id="link-final" href="#" target="_blank"></a>
 </body>
 </html>
