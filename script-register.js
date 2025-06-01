@@ -18,43 +18,40 @@ registroForm.addEventListener('submit', async e => {
   try {
     const { user } = await createUserWithEmailAndPassword(auth, email, pass);
 
-    // 1) Documento 'usuarios/{uid}' con nombre, correo y rol
+    // 1) Crear documento en usuarios/{uid}
     await setDoc(doc(db, "usuarios", user.uid), {
       nombre,
       correo: email,
       rol
     });
 
-    // 2) Documento inicial en 'residencias/{uidAlumno}'
-    //    Si el rol es 'alumno', creamos la estructura completa con campos vacíos.
+    // 2) Si es alumno, inicializar Firestore con la estructura nueva
     if (rol === "alumno") {
       await setDoc(doc(db, "residencias", user.uid), {
         estudianteNombre: nombre,
 
-        // Array vacío de asesores
+        // Array vacío de asesores (se llenará desde el panel del Ejecutivo)
         asesores: [],
 
-        // Campos vacíos para cada documento
         anteproyecto: {
           url: "",
-          docente: "pendiente",
-          obsDocente: "",
-          admin: "pendiente",
-          obsAdmin: ""
+          evaluacionesDocente: {},
+          adminEstado: "pendiente",
+          adminObs: ""
         },
+
         reporteParcial: {
           url: "",
-          docente: "pendiente",
-          obsDocente: "",
-          admin: "pendiente",
-          obsAdmin: ""
+          evaluacionesDocente: {},
+          adminEstado: "pendiente",
+          adminObs: ""
         },
+
         proyectoFinal: {
           url: "",
-          docente: "pendiente",
-          obsDocente: "",
-          admin: "pendiente",
-          obsAdmin: ""
+          evaluacionesDocente: {},
+          adminEstado: "pendiente",
+          adminObs: ""
         }
       });
     }
