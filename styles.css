@@ -151,28 +151,29 @@
     width: 100%;
   }
 }
-/* ================================
-   ESTADOS DE DOCUMENTOS (Alumno)
-   ================================ */
-
-.status-pendiente {
-  color: #6c757d; /* gris */
-  font-weight: bold;
-}
+/* ====================
+   ESTILOS PARA Estados de Documentos
+   ==================== */
 
 .status-aprobado {
-  color: #28a745; /* verde */
+  color: #27ae60;         /* verde */
   font-weight: bold;
 }
 
 .status-rechazado {
-  color: #dc3545; /* rojo */
+  color: #c0392b;         /* rojo */
   font-weight: bold;
 }
 
-/* Pequeño estilo para el texto que indica quién calificó */
-.info-calificador {
-  font-size: 0.9rem;
-  margin-left: 0.5rem;
-  color: #444;
+.status-pendiente {
+  color: #f39c12;         /* amarillo/naranja */
+  font-weight: bold;
+}
+
+/* Margin inferior para que no se apelotonen texto y enlaces */
+.enlace-con-estado {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
 }
