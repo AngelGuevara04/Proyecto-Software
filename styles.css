@@ -1,126 +1,106 @@
-/* styles.css */
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background-color: #f4f4f4;
-  color: #333;
+/* ====================
+   ESTILOS PARA Dashboard Alumno
+   ==================== */
+
+/* Contenedor principal */
+.main-alumno {
+  max-width: 800px;
+  margin: 1rem auto;
+  padding: 0 1rem;
+  background-color: #fafafa;
+  border-radius: 6px;
+  box-shadow: 0 0 8px rgba(0,0,0,0.1);
 }
 
-header {
+/* Header alumno */
+.header-alumno {
   background-color: #333;
   color: #fff;
-  padding: 1rem;
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap;
+  padding: 0.75rem 1rem;
 }
 
-header img {
-  height: 50px;
-  vertical-align: middle;
+.header-alumno h1 {
+  margin: 0;
+  font-size: 1.4rem;
 }
 
-header h1 {
-  margin: 0 10px;
-  font-size: 1.5rem;
-  flex: 1;
-}
-
-nav {
-  margin-top: 5px;
-}
-
-nav a {
+.btn-logout {
+  background-color: #c0392b;
   color: #fff;
+  border: none;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-logout:hover {
+  background-color: #e74c3c;
+}
+
+/* Sección de enlaces */
+.seccion-enlaces {
+  margin-bottom: 1.5rem;
+}
+
+.seccion-enlaces h2 {
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+}
+
+#enlaces-documentos a {
+  display: inline-block;
+  margin-right: 1rem;
+  margin-bottom: 0.5rem;
+  color: #2c3e50;
   text-decoration: none;
-  margin: 0 10px;
+  border: 1px solid #2c3e50;
+  padding: 0.3rem 0.5rem;
+  border-radius: 4px;
+  transition: background-color 0.2s;
 }
 
-nav a:hover {
-  text-decoration: underline;
+#enlaces-documentos a:hover {
+  background-color: #2c3e50;
+  color: #fff;
 }
 
-.main, main {
-  padding: 1rem;
-  min-height: calc(100vh - 160px);
+/* Sección de subida de archivos */
+.seccion-subida h2 {
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
 }
 
-section {
-  margin-bottom: 2rem;
-}
-
-form {
+.formulario-subida {
   background-color: #fff;
   padding: 1rem;
+  margin-bottom: 1rem;
   border-radius: 5px;
-  max-width: 400px;
-  margin: 1rem auto;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  box-shadow: 0 0 6px rgba(0,0,0,0.08);
 }
 
-form label {
+.formulario-subida label {
   display: block;
-  margin-top: 1rem;
+  margin-bottom: 0.3rem;
+  font-weight: bold;
 }
 
-form input,
-form button,
-form select {
-  width: 100%;
-  padding: 0.5rem;
-  margin-top: 5px;
-  box-sizing: border-box;
+.formulario-subida input[type="file"] {
+  display: block;
+  margin-bottom: 0.5rem;
 }
 
-form button {
+.formulario-subida button {
   background-color: #333;
   color: #fff;
   border: none;
-  margin-top: 1rem;
-  cursor: pointer;
-}
-
-form button:hover {
-  background-color: #555;
-}
-
-button#logout-button {
-  background: #c0392b;
-  color: #fff;
-  border: none;
-  padding: 0.5rem 1rem;
-  cursor: pointer;
+  padding: 0.5rem 0.75rem;
   border-radius: 4px;
+  cursor: pointer;
 }
 
-button#logout-button:hover {
-  background: #e74c3c;
-}
-
-footer {
-  text-align: center;
-  padding: 1rem;
-  background-color: #333;
-  color: #fff;
-  position: relative;
-  bottom: 0;
-  width: 100%;
-}
-
-/* Responsive */
-@media (max-width: 600px) {
-  header h1 {
-    font-size: 1.2rem;
-    text-align: center;
-    width: 100%;
-  }
-  form {
-    max-width: 90%;
-  }
-  nav {
-    text-align: center;
-  }
-  nav a {
-    margin: 5px;
-  }
+.formulario-subida button:hover {
+  background-color: #555;
 }
