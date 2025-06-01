@@ -1,179 +1,300 @@
-/* ====================
-   ESTILOS PARA Dashboard Alumno con Bienvenida y Asesores
-   ==================== */
+/* styles.css */
 
-/* ===== Header ===== */
-.header-alumno {
-  background-color: #333;
-  color: #fff;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.75rem 1rem;
+/* ===========================
+   RESET Y ESTILOS BASE
+   =========================== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-.header-alumno h1 {
-  margin: 0;
-  font-size: 1.4rem;
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f4;
+  color: #333;
+  line-height: 1.5;
+  font-size: 1rem; /* 16px base */
+}
+
+/* ===========================
+   HEADER RESPONSIVO
+   =========================== */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #333;
+  color: #fff;
+  padding: 1rem;
+}
+
+header h1 {
+  font-size: 1.5rem; /* 24px */
 }
 
 .btn-logout {
-  background-color: #c0392b;
+  background: #c0392b;
   color: #fff;
   border: none;
-  padding: 0.5rem 0.75rem;
-  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
   cursor: pointer;
+  border-radius: 0.25rem;
 }
 
-.btn-logout:hover {
-  background-color: #e74c3c;
+/* Header en pantallas muy pequeñas */
+@media (max-width: 400px) {
+  header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .btn-logout {
+    margin-top: 0.5rem;
+    width: 100%;
+    text-align: center;
+  }
 }
 
-/* ===== Main (contenedor) ===== */
-.main-alumno {
-  max-width: 800px;
-  margin: 1rem auto;
-  padding: 0 1rem;
-  background-color: #fafafa;
-  border-radius: 6px;
-  box-shadow: 0 0 8px rgba(0,0,0,0.1);
-}
-
-/* ===== Bienvenida y Asesores ===== */
-.seccion-bienvenida {
-  margin-bottom: 1rem;
-}
-
-.seccion-bienvenida h2 {
-  font-size: 1.3rem;
-  margin-bottom: 0.4rem;
-}
-
-#asesores-container {
-  margin-bottom: 0.8rem;
-}
-
-#lista-asesores {
-  list-style: disc;
-  margin-left: 1.5rem;
-}
-
-/* ===== Sección "Mis Documentos" ===== */
-.seccion-enlaces h2 {
-  font-size: 1.2rem;
-  margin-bottom: 0.5rem;
-}
-
-#enlaces-documentos a {
-  display: inline-block;
-  margin-right: 1rem;
-  margin-bottom: 0.5rem;
-  color: #2c3e50;
-  text-decoration: none;
-  border: 1px solid #2c3e50;
-  padding: 0.3rem 0.5rem;
-  border-radius: 4px;
-  transition: background-color 0.2s;
-}
-
-#enlaces-documentos a:hover {
-  background-color: #2c3e50;
-  color: #fff;
-}
-
-/* ===== Sección "Subir Documentos" ===== */
-.seccion-subida h2 {
-  font-size: 1.2rem;
-  margin-bottom: 0.5rem;
-}
-
-/* Botones que muestran un formulario */
-.botones-subir {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-}
-
-.btn-mostrar-form {
-  background-color: #333;
-  color: #fff;
-  border: none;
-  padding: 0.5rem 0.75rem;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.btn-mostrar-form:hover {
-  background-color: #555;
-}
-
-/* Cada contenedor de formulario */
-.formulario-subida {
-  background-color: #fff;
+/* ===========================
+   SECCIONES Y CONTENEDOR PRINCIPAL
+   =========================== */
+main {
   padding: 1rem;
-  margin-bottom: 1rem;
-  border-radius: 5px;
-  box-shadow: 0 0 6px rgba(0,0,0,0.08);
 }
 
-.formulario-subida label {
-  display: block;
-  margin-bottom: 0.3rem;
+/* Separación entre secciones */
+section {
+  margin-bottom: 2rem;
+}
+
+/* ===========================
+   LISTA DE ASESORES
+   =========================== */
+#asesores-container ul {
+  list-style: disc inside;
+  margin-top: 0.5rem;
+  margin-left: 1rem;
+}
+
+/* ===========================
+   “MIS DOCUMENTOS” (ENLACES Y ESTADOS)
+   =========================== */
+.enlace-con-estado {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.btn-enlace {
+  background: none;
+  border: none;
+  color: #2980b9;
+  text-decoration: none;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.status-aprobado {
+  color: #27ae60; /* verde */
   font-weight: bold;
 }
 
-.formulario-subida input[type="file"] {
-  display: block;
-  margin-bottom: 0.5rem;
+.status-rechazado {
+  color: #c0392b; /* rojo */
+  font-weight: bold;
 }
 
-/* Botón de “Subir” dentro de cada formulario */
+.status-pendiente {
+  color: #f39c12; /* amarillo/naranja */
+  font-weight: bold;
+}
+
+/* ===========================
+   “SUBIR DOCUMENTOS” RESPONSIVO
+   =========================== */
+
+/* Wrapper de botones */
+.botones-subir {
+  display: flex;
+  flex-direction: column; /* Mobile-first: en columna */
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.botones-subir .btn-mostrar-form {
+  width: 100%;
+  padding: 0.75rem;
+  font-size: 1rem;
+  background-color: #333;
+  color: #fff;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+}
+
+.botones-subir .btn-mostrar-form:hover {
+  background-color: #555;
+}
+
+/* Formularios (ocultos o mostrados) */
+.formulario-subida {
+  width: 100%;
+  background-color: #fff;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 0 8px rgba(0,0,0,0.1);
+}
+
+/* Inputs y botones dentro del form */
+.formulario-subida input[type="file"],
+.formulario-subida button {
+  width: 100%;
+  padding: 0.5rem;
+  margin-top: 0.5rem;
+  font-size: 1rem;
+}
+
+/* Botón enviar */
 .btn-enviar {
   background-color: #333;
   color: #fff;
   border: none;
-  padding: 0.5rem 0.75rem;
-  border-radius: 4px;
+  margin-top: 1rem;
   cursor: pointer;
+  border-radius: 0.25rem;
 }
 
 .btn-enviar:hover {
   background-color: #555;
 }
 
-/* ===== Responsive ===== */
-@media (max-width: 600px) {
-  .botones-subir {
-    flex-direction: column;
-  }
-  .btn-mostrar-form {
-    width: 100%;
-  }
-}
-/* ====================
-   ESTILOS PARA Estados de Documentos
-   ==================== */
-
-.status-aprobado {
-  color: #27ae60;         /* verde */
-  font-weight: bold;
-}
-
-.status-rechazado {
-  color: #c0392b;         /* rojo */
-  font-weight: bold;
-}
-
-.status-pendiente {
-  color: #f39c12;         /* amarillo/naranja */
-  font-weight: bold;
-}
-
-/* Margin inferior para que no se apelotonen texto y enlaces */
-.enlace-con-estado {
+/* ===========================
+   FLEXBOX / GRID PARA FORMULARIOS
+   =========================== */
+#forms-wrapper {
   display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.5rem;
+  flex-direction: column; /* Móvil: en columna */
+  gap: 1rem;
+}
+
+/* En pantallas ≥600px, botones en fila */
+@media (min-width: 600px) {
+  .botones-subir {
+    flex-direction: row;
+  }
+  .botones-subir .btn-mostrar-form {
+    flex: 1; /* Se reparten el ancho igual */
+    width: auto;
+  }
+}
+
+/* En pantallas ≥900px, mostrar los formularios en fila */
+@media (min-width: 900px) {
+  #forms-wrapper {
+    flex-direction: row;
+    gap: 2rem;
+  }
+  .formulario-subida {
+    flex: 1; /* Cada formulario ocupa igual espacio */
+  }
+}
+
+/* ===========================
+   RESPONSIVO PARA “MIS DOCUMENTOS”
+   =========================== */
+#enlaces-documentos {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* ===========================
+   FOOTER (SI APLICA)
+   =========================== */
+footer {
+  text-align: center;
+  padding: 1rem;
+  background-color: #333;
+  color: #fff;
+  width: 100%;
+}
+
+/* ===========================
+   ESTILOS GENERALES DE FORMULARIO
+   =========================== */
+form {
+  width: 90%;
+  max-width: 400px;
+  margin: 0 auto;
+  background-color: #fff;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 0 8px rgba(0,0,0,0.1);
+}
+
+form label {
+  display: block;
+  margin-top: 1rem;
+  font-size: 1rem;
+}
+
+form input,
+form select,
+form textarea {
+  width: 100%;
+  padding: 0.5rem;
+  margin-top: 0.5rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 0.25rem;
+  box-sizing: border-box;
+}
+
+/* ===========================
+   EJEMPLO DE GRID PARA LISTA DE ALUMNOS (PANEL DOCENTE)
+   =========================== */
+.grid-alumnos {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 600px) {
+  .grid-alumnos {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (min-width: 900px) {
+  .grid-alumnos {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+}
+
+.alumno-card {
+  background-color: #fff;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 0 8px rgba(0,0,0,0.1);
+}
+
+/* ===========================
+   MEDIA QUERIES ADICIONALES
+   =========================== */
+
+/* Reducir fuente en pantallas muy pequeñas */
+@media (max-width: 320px) {
+  body {
+    font-size: 0.9rem; /* ~14.4px */
+  }
+}
+
+/* Aumentar ligeramente fuente en pantallas muy grandes */
+@media (min-width: 1200px) {
+  body {
+    font-size: 1.1rem; /* ~17.6px */
+  }
 }
