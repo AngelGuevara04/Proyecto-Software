@@ -88,16 +88,16 @@ onAuthStateChanged(auth, async (user) => {
     `;
     const tbodyAnt = tableAnt.querySelector('tbody');
 
-    // Si existe URL, mostrar enlace en la primera fila:
     if (data.anteproyecto?.url) {
+      // Creamos variable con el HTML del enlace para reusar
       const enlaceCell = `<a href="${data.anteproyecto.url}" target="_blank">Descargar PDF</a>`;
-      // Para cada asesor, dibujar su fila
-      if (
-        data.anteproyecto.evaluacionesDocente &&
-        typeof data.anteproyecto.evaluacionesDocente === 'object'
-      ) {
-        for (const uidDoc of Object.keys(data.anteproyecto.evaluacionesDocente)) {
-          const evalObj = data.anteproyecto.evaluacionesDocente[uidDoc];
+
+      // Si hay evaluacionesDocente definidas (ya sea un objeto vacío o con datos)
+      const evAnt = data.anteproyecto.evaluacionesDocente;
+      if (evAnt && typeof evAnt === 'object' && Object.keys(evAnt).length > 0) {
+        // Recorremos cada evaluator (docente) que haya dejado un estado
+        for (const uidDoc of Object.keys(evAnt)) {
+          const evalObj = evAnt[uidDoc];
           const nombreDoc = docentesNombres[uidDoc] || '[Docente eliminado]';
           const estadoDoc = evalObj.estado || 'pendiente';
           const textoEstado =
@@ -123,9 +123,10 @@ onAuthStateChanged(auth, async (user) => {
           `;
           tbodyAnt.appendChild(row);
         }
-      } else {
-        // No hay evaluaciones por docentes → mostrar “Pendiente” para todos los asesores asignados
-        data.asesores.forEach(uidDoc => {
+      } else if (Array.isArray(data.asesores) && data.asesores.length > 0) {
+        // Si no hay evaluaciones, pero sí hay asesores asignados,
+        // creamos una fila “Pendiente” para cada asesor
+        for (const uidDoc of data.asesores) {
           const nombreDoc = docentesNombres[uidDoc] || '[Docente eliminado]';
           const row = document.createElement('tr');
           row.innerHTML = `
@@ -135,10 +136,18 @@ onAuthStateChanged(auth, async (user) => {
             <td></td>
           `;
           tbodyAnt.appendChild(row);
-        });
+        }
+      } else {
+        // Ni evaluaciones ni asesores → mostramos una sola fila para el enlace
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${enlaceCell}</td>
+          <td colspan="3" class="status-pendiente">Pendiente (sin asesor asignado)</td>
+        `;
+        tbodyAnt.appendChild(row);
       }
 
-      // Ahora, si el Admin ya evaluó, añadir fila separada al final
+      // Agregar fila de Admin si ya calificó
       if (data.anteproyecto.adminEstado && data.anteproyecto.adminEstado !== 'pendiente') {
         const textoAdm =
           data.anteproyecto.adminEstado === 'aprobado'
@@ -159,7 +168,7 @@ onAuthStateChanged(auth, async (user) => {
         tbodyAnt.appendChild(rowAdm);
       }
     } else {
-      // Si no hay URL, poner una sola fila indicando “Sin archivo subido”
+      // Si no hay URL, ponemos una sola fila indicando “Sin archivo subido”
       const row = document.createElement('tr');
       row.innerHTML = `
         <td><em>Sin archivo</em></td>
@@ -188,12 +197,11 @@ onAuthStateChanged(auth, async (user) => {
 
     if (data.reporteParcial?.url) {
       const enlaceCell = `<a href="${data.reporteParcial.url}" target="_blank">Descargar PDF</a>`;
-      if (
-        data.reporteParcial.evaluacionesDocente &&
-        typeof data.reporteParcial.evaluacionesDocente === 'object'
-      ) {
-        for (const uidDoc of Object.keys(data.reporteParcial.evaluacionesDocente)) {
-          const evalObj = data.reporteParcial.evaluacionesDocente[uidDoc];
+
+      const evRep = data.reporteParcial.evaluacionesDocente;
+      if (evRep && typeof evRep === 'object' && Object.keys(evRep).length > 0) {
+        for (const uidDoc of Object.keys(evRep)) {
+          const evalObj = evRep[uidDoc];
           const nombreDoc = docentesNombres[uidDoc] || '[Docente eliminado]';
           const estadoDoc = evalObj.estado || 'pendiente';
           const textoEstado =
@@ -219,8 +227,8 @@ onAuthStateChanged(auth, async (user) => {
           `;
           tbodyRep.appendChild(row);
         }
-      } else {
-        data.asesores.forEach(uidDoc => {
+      } else if (Array.isArray(data.asesores) && data.asesores.length > 0) {
+        for (const uidDoc of data.asesores) {
           const nombreDoc = docentesNombres[uidDoc] || '[Docente eliminado]';
           const row = document.createElement('tr');
           row.innerHTML = `
@@ -230,7 +238,14 @@ onAuthStateChanged(auth, async (user) => {
             <td></td>
           `;
           tbodyRep.appendChild(row);
-        });
+        }
+      } else {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${enlaceCell}</td>
+          <td colspan="3" class="status-pendiente">Pendiente (sin asesor asignado)</td>
+        `;
+        tbodyRep.appendChild(row);
       }
 
       if (data.reporteParcial.adminEstado && data.reporteParcial.adminEstado !== 'pendiente') {
@@ -281,12 +296,11 @@ onAuthStateChanged(auth, async (user) => {
 
     if (data.proyectoFinal?.url) {
       const enlaceCell = `<a href="${data.proyectoFinal.url}" target="_blank">Descargar PDF</a>`;
-      if (
-        data.proyectoFinal.evaluacionesDocente &&
-        typeof data.proyectoFinal.evaluacionesDocente === 'object'
-      ) {
-        for (const uidDoc of Object.keys(data.proyectoFinal.evaluacionesDocente)) {
-          const evalObj = data.proyectoFinal.evaluacionesDocente[uidDoc];
+
+      const evFin = data.proyectoFinal.evaluacionesDocente;
+      if (evFin && typeof evFin === 'object' && Object.keys(evFin).length > 0) {
+        for (const uidDoc of Object.keys(evFin)) {
+          const evalObj = evFin[uidDoc];
           const nombreDoc = docentesNombres[uidDoc] || '[Docente eliminado]';
           const estadoDoc = evalObj.estado || 'pendiente';
           const textoEstado =
@@ -312,8 +326,8 @@ onAuthStateChanged(auth, async (user) => {
           `;
           tbodyFin.appendChild(row);
         }
-      } else {
-        data.asesores.forEach(uidDoc => {
+      } else if (Array.isArray(data.asesores) && data.asesores.length > 0) {
+        for (const uidDoc of data.asesores) {
           const nombreDoc = docentesNombres[uidDoc] || '[Docente eliminado]';
           const row = document.createElement('tr');
           row.innerHTML = `
@@ -323,7 +337,14 @@ onAuthStateChanged(auth, async (user) => {
             <td></td>
           `;
           tbodyFin.appendChild(row);
-        });
+        }
+      } else {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${enlaceCell}</td>
+          <td colspan="3" class="status-pendiente">Pendiente (sin asesor asignado)</td>
+        `;
+        tbodyFin.appendChild(row);
       }
 
       if (data.proyectoFinal.adminEstado && data.proyectoFinal.adminEstado !== 'pendiente') {
