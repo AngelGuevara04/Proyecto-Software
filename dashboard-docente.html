@@ -4,26 +4,27 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Residencias - Docente</title>
+  <title>Panel de Docente</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <!-- ===== HEADER ===== -->
   <header class="header-docente">
-    <img src="logo.jpg" alt="Logo" class="logo-docente" />
     <h1>Panel de Docente</h1>
     <button id="logout-button" class="btn-logout">Cerrar Sesión</button>
   </header>
 
+  <!-- ===== MAIN ===== -->
   <main class="main-docente">
-    <!-- Lista de alumnos asignados -->
+    <!-- 1) Lista de Alumnos Asignados -->
     <section>
       <h2>Alumnos Asignados</h2>
       <div id="lista-alumnos" class="lista-alumnos"></div>
     </section>
 
-    <!-- Sección para revisar documentos de un alumno en particular -->
+    <!-- 2) Revisión de Documentos (oculto al inicio) -->
     <section id="revisar-contenido" class="revisar-contenido" style="display: none;">
-      <!-- Aquí se inyectará el HTML con enlaces y formularios de calificación -->
+      <!-- Aquí inyectamos dinámicamente el contenido de revisión -->
     </section>
   </main>
 
@@ -31,7 +32,7 @@
     <p>&copy; 2025 Sistema de Residencias Profesionales</p>
   </footer>
 
-  <!-- Scripts: primero firebase-config, luego script-docente -->
+  <!-- ===== SCRIPTS ===== -->
   <script type="module" src="firebase-config.js"></script>
   <script type="module" src="script-docente.js"></script>
 </body>
