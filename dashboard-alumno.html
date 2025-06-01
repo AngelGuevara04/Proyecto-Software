@@ -4,53 +4,82 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Dashboard Alumno</title>
+  <title>Panel de Alumno</title>
+  <!-- Asegúrate de que este enlace a styles.css sea correcto -->
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <!-- =====================
+       HEADER
+       ===================== -->
   <header class="header-alumno">
     <h1>Panel de Alumno</h1>
     <button id="logout-button" class="btn-logout">Cerrar Sesión</button>
   </header>
 
+  <!-- =====================
+       SECCIÓN PRINCIPAL
+       ===================== -->
   <main class="main-alumno">
-    <!-- Zona para mostrar enlaces a archivos ya subidos -->
+    <!-- =====================
+         1) MIS DOCUMENTOS
+         ===================== -->
     <section id="seccion-enlaces" class="seccion-enlaces">
       <h2>Mis Documentos</h2>
       <div id="enlaces-documentos">
-        <!-- Aquí se inyectarán los <a> para descargar/visualizar -->
+        <!-- Aquí el script inyectará botones / enlaces "Ver Anteproyecto", etc. -->
       </div>
-      <hr/>
+      <hr />
     </section>
 
-    <!-- Zona de formularios de subida -->
+    <!-- =====================
+         2) SUBIR DOCUMENTOS
+         ===================== -->
     <section id="seccion-subida" class="seccion-subida">
       <h2>Subir Documentos</h2>
 
-      <!-- Formulario Anteproyecto -->
-      <form id="form-anteproyecto" class="formulario-subida">
-        <label for="archivo"><strong>Anteproyecto:</strong></label>
-        <input type="file" accept="application/pdf" id="archivo" required />
-        <button type="submit">Subir Anteproyecto</button>
-      </form>
+      <!--
+        Botones para desplegar cada formulario de subida.
+        Al hacer clic, el script mostrará el bloque correspondiente.
+      -->
+      <div class="botones-subir">
+        <button id="btn-mostrar-ante" class="btn-mostrar-form">Subir Anteproyecto</button>
+        <button id="btn-mostrar-rep" class="btn-mostrar-form">Subir Reporte Parcial</button>
+        <button id="btn-mostrar-final" class="btn-mostrar-form">Subir Proyecto Final</button>
+      </div>
 
-      <!-- Formulario Reporte Parcial -->
-      <form id="form-reporte" class="formulario-subida">
-        <label for="reporte"><strong>Reporte Parcial:</strong></label>
-        <input type="file" accept="application/pdf" id="reporte" required />
-        <button type="submit">Subir Reporte Parcial</button>
-      </form>
+      <!-- Formulario de Anteproyecto (oculto al inicio) -->
+      <div id="form-ante-container" class="formulario-subida" style="display: none;">
+        <form id="form-anteproyecto">
+          <label for="archivo"><strong>Anteproyecto:</strong></label><br/>
+          <input type="file" accept="application/pdf" id="archivo" required /><br/>
+          <button type="submit" class="btn-enviar">Subir Anteproyecto</button>
+        </form>
+      </div>
 
-      <!-- Formulario Proyecto Final -->
-      <form id="form-final" class="formulario-subida">
-        <label for="final"><strong>Proyecto Final:</strong></label>
-        <input type="file" accept="application/pdf" id="final" required />
-        <button type="submit">Subir Proyecto Final</button>
-      </form>
+      <!-- Formulario de Reporte Parcial (oculto al inicio) -->
+      <div id="form-rep-container" class="formulario-subida" style="display: none;">
+        <form id="form-reporte">
+          <label for="reporte"><strong>Reporte Parcial:</strong></label><br/>
+          <input type="file" accept="application/pdf" id="reporte" required /><br/>
+          <button type="submit" class="btn-enviar">Subir Reporte Parcial</button>
+        </form>
+      </div>
+
+      <!-- Formulario de Proyecto Final (oculto al inicio) -->
+      <div id="form-final-container" class="formulario-subida" style="display: none;">
+        <form id="form-final">
+          <label for="final"><strong>Proyecto Final:</strong></label><br/>
+          <input type="file" accept="application/pdf" id="final" required /><br/>
+          <button type="submit" class="btn-enviar">Subir Proyecto Final</button>
+        </form>
+      </div>
     </section>
   </main>
 
-  <!-- Scripts: primero firebase-config y luego script-alumno -->
+  <!-- =====================
+       SCRIPTS
+       ===================== -->
   <script type="module" src="firebase-config.js"></script>
   <script type="module" src="script-alumno.js"></script>
 </body>
