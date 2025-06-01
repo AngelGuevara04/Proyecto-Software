@@ -1,5 +1,5 @@
 /* ====================
-   ESTILOS PARA Dashboard Alumno
+   ESTILOS PARA Dashboard Alumno con Bienvenida y Asesores
    ==================== */
 
 /* ===== Header ===== */
@@ -40,11 +40,26 @@
   box-shadow: 0 0 8px rgba(0,0,0,0.1);
 }
 
-/* ===== Sección "Mis Documentos" ===== */
-.seccion-enlaces {
-  margin-bottom: 1.5rem;
+/* ===== Bienvenida y Asesores ===== */
+.seccion-bienvenida {
+  margin-bottom: 1rem;
 }
 
+.seccion-bienvenida h2 {
+  font-size: 1.3rem;
+  margin-bottom: 0.4rem;
+}
+
+#asesores-container {
+  margin-bottom: 0.8rem;
+}
+
+#lista-asesores {
+  list-style: disc;
+  margin-left: 1.5rem;
+}
+
+/* ===== Sección "Mis Documentos" ===== */
 .seccion-enlaces h2 {
   font-size: 1.2rem;
   margin-bottom: 0.5rem;
