@@ -20,7 +20,7 @@ const auth = getAuth(app);
 
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
-    return window.location.href = 'login.html';
+    return window.location.href = 'index.html';
   }
 
   // 1) Verificar rol "ejecutivo"
@@ -28,13 +28,13 @@ onAuthStateChanged(auth, async (user) => {
   if (!perfilSnap.exists() || perfilSnap.data().rol !== 'ejecutivo') {
     alert('Acceso denegado: solo administradores pueden ver este panel.');
     await signOut(auth);
-    return window.location.href = 'login.html';
+    return window.location.href = 'index.html';
   }
 
   // 2) BOTÓN Cerrar Sesión
   document.getElementById('logout-button').addEventListener('click', async () => {
     await signOut(auth);
-    window.location.href = 'login.html';
+    window.location.href = 'index.html';
   });
 
   // 3) Obtener todos los alumnos
@@ -45,36 +45,32 @@ onAuthStateChanged(auth, async (user) => {
   const qDocentes = query(collection(db, 'usuarios'), where('rol', '==', 'docente'));
   const docentesSnap = await getDocs(qDocentes);
 
-  // Preparamos un array con objetos { uid: "...", nombre: "...", correo: "..." }
   const listaDocentes = [];
   docentesSnap.forEach(docSnap => {
     listaDocentes.push({
       uid: docSnap.id,
-      nombre: docSnap.data().nombre,
-      correo: docSnap.data().correo
+      nombre: docSnap.data().nombre
     });
   });
 
   // 5) Recorrer cada alumno y crear su “tarjeta”
   const contenedorAlumnos = document.getElementById('lista-alumnos-ejecutivo');
-  contenedorAlumnos.innerHTML = ''; // Limpiar antes
+  contenedorAlumnos.innerHTML = '';
 
   for (const alumnoDoc of alumnosSnap.docs) {
     const uidAlumno = alumnoDoc.id;
     const { nombre: nombreAlumno, correo: correoAlumno } = alumnoDoc.data();
 
-    // Leer su documento en 'residencias/{uidAlumno}' para ver si ya tiene asesores
     const resSnap = await getDoc(doc(db, 'residencias', uidAlumno));
     const dataResid = resSnap.exists() ? resSnap.data() : null;
     const asesoresArray = Array.isArray(dataResid?.asesores) ? dataResid.asesores : [];
 
-    // Crear elemento <div class="tarjeta-alumno"> … </div>
     const tarjeta = document.createElement('div');
     tarjeta.classList.add('tarjeta-alumno');
     tarjeta.innerHTML = `
       <div class="info-alumno">
         <strong>Alumno:</strong> ${nombreAlumno} (${uidAlumno})<br />
-        <strong>Email:</strong> ${correoAlumno}<br />
+        <strong>Email:</strong> ${correoAlumno}
       </div>
       <div class="asignacion-asesores">
         <label for="docente1-${uidAlumno}">Asesor 1:</label>
@@ -98,34 +94,26 @@ onAuthStateChanged(auth, async (user) => {
       </div>
       <hr/>
     `;
-
     contenedorAlumnos.appendChild(tarjeta);
 
-    // 6) Agregar eventos a los botones “Guardar” y “Revocar”
     document.getElementById(`btn-guardar-${uidAlumno}`).addEventListener('click', async () => {
-      // Leer valores de los selects
       const uidDoc1 = document.getElementById(`docente1-${uidAlumno}`).value;
       const uidDoc2 = document.getElementById(`docente2-${uidAlumno}`).value;
 
-      // Construir array de asesores (no incluir cadenas vacías)
       const nuevosAsesores = [];
       if (uidDoc1) nuevosAsesores.push(uidDoc1);
       if (uidDoc2 && uidDoc2 !== uidDoc1) nuevosAsesores.push(uidDoc2);
 
-      // Actualizar Firestore
       await updateDoc(doc(db, 'residencias', uidAlumno), {
         asesores: nuevosAsesores
       });
-
       alert('Asesores actualizados correctamente.');
     });
 
     document.getElementById(`btn-revocar-${uidAlumno}`).addEventListener('click', async () => {
-      // Poner array vacío en Firestore
       await updateDoc(doc(db, 'residencias', uidAlumno), {
         asesores: []
       });
-      // También borrar la selección en los <select>
       document.getElementById(`docente1-${uidAlumno}`).value = "";
       document.getElementById(`docente2-${uidAlumno}`).value = "";
       alert('Asesores revocados para este alumno.');
