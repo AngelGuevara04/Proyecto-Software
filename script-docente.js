@@ -20,29 +20,31 @@ const auth = getAuth(app);
 
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
-    window.location.href = 'login.html';
+    window.location.href = 'index.html';
     return;
   }
 
+  const miUID = user.uid;
+
   // 1) Verificar rol “docente”
-  const perfilSnap = await getDoc(doc(db, 'usuarios', user.uid));
+  const perfilSnap = await getDoc(doc(db, 'usuarios', miUID));
   if (!perfilSnap.exists() || perfilSnap.data().rol !== 'docente') {
     alert('Acceso denegado: Solo docentes pueden ver este panel.');
     await signOut(auth);
-    window.location.href = 'login.html';
+    window.location.href = 'index.html';
     return;
   }
 
-  // 2) BOTÓN “Cerrar Sesión”
+  // 2) Botón Cerrar Sesión → index.html
   document.getElementById('logout-button').addEventListener('click', async () => {
     await signOut(auth);
-    window.location.href = 'login.html';
+    window.location.href = 'index.html';
   });
 
-  // 3) Query alumnos asignados (asesores array-contains user.uid)
+  // 3) Query alumnos asignados (asesores array-contains miUID)
   const q = query(
     collection(db, 'residencias'),
-    where('asesores', 'array-contains', user.uid)
+    where('asesores', 'array-contains', miUID)
   );
   const snapshot = await getDocs(q);
 
@@ -55,7 +57,6 @@ onAuthStateChanged(auth, async (user) => {
   // 4) Generar listado de alumnos
   for (const resDoc of snapshot.docs) {
     const uidAlumno = resDoc.id;
-
     // Obtener nombre real desde 'usuarios/{uidAlumno}'
     const uSnap = await getDoc(doc(db, 'usuarios', uidAlumno));
     const nombreAlumno = uSnap.exists() ? uSnap.data().nombre : '[Alumno Eliminado]';
@@ -69,11 +70,11 @@ onAuthStateChanged(auth, async (user) => {
     listaAlumnosDiv.appendChild(tarjeta);
   }
 
-  // 5) Al hacer clic en “Revisar Documentos”
+  // 5) Manejar clic en “Revisar Documentos”
   listaAlumnosDiv.addEventListener('click', async (e) => {
     if (!e.target.matches('.btn-revisar')) return;
-
     const uidAlumno = e.target.dataset.uid;
+
     const resSnap = await getDoc(doc(db, 'residencias', uidAlumno));
     if (!resSnap.exists()) {
       revisarDiv.innerHTML = '<p>No hay datos para este alumno.</p>';
@@ -90,11 +91,11 @@ onAuthStateChanged(auth, async (user) => {
               <label>Estado:</label>
               <select required>
                 <option value="">-- Seleccione --</option>
-                <option value="aprobado" ${d.anteproyecto.docente === 'aprobado' ? 'selected' : ''}>Aprobado</option>
-                <option value="rechazado" ${d.anteproyecto.docente === 'rechazado' ? 'selected' : ''}>Rechazado</option>
+                <option value="aprobado" ${d.anteproyecto.evaluacionesDocente?.[miUID]?.estado === 'aprobado' ? 'selected' : ''}>Aprobado</option>
+                <option value="rechazado" ${d.anteproyecto.evaluacionesDocente?.[miUID]?.estado === 'rechazado' ? 'selected' : ''}>Rechazado</option>
               </select><br/>
               <label>Comentarios:</label><br/>
-              <textarea rows="3">${d.anteproyecto.obsDocente || ''}</textarea><br/>
+              <textarea rows="3">${d.anteproyecto.evaluacionesDocente?.[miUID]?.obs || ''}</textarea><br/>
               <button type="submit" class="btn-calificar">Guardar</button>
             </form>
           </div>
@@ -112,11 +113,11 @@ onAuthStateChanged(auth, async (user) => {
               <label>Estado:</label>
               <select required>
                 <option value="">-- Seleccione --</option>
-                <option value="aprobado" ${d.reporteParcial.docente === 'aprobado' ? 'selected' : ''}>Aprobado</option>
-                <option value="rechazado" ${d.reporteParcial.docente === 'rechazado' ? 'selected' : ''}>Rechazado</option>
+                <option value="aprobado" ${d.reporteParcial.evaluacionesDocente?.[miUID]?.estado === 'aprobado' ? 'selected' : ''}>Aprobado</option>
+                <option value="rechazado" ${d.reporteParcial.evaluacionesDocente?.[miUID]?.estado === 'rechazado' ? 'selected' : ''}>Rechazado</option>
               </select><br/>
               <label>Comentarios:</label><br/>
-              <textarea rows="3">${d.reporteParcial.obsDocente || ''}</textarea><br/>
+              <textarea rows="3">${d.reporteParcial.evaluacionesDocente?.[miUID]?.obs || ''}</textarea><br/>
               <button type="submit" class="btn-calificar">Guardar</button>
             </form>
           </div>
@@ -134,11 +135,11 @@ onAuthStateChanged(auth, async (user) => {
               <label>Estado:</label>
               <select required>
                 <option value="">-- Seleccione --</option>
-                <option value="aprobado" ${d.proyectoFinal.docente === 'aprobado' ? 'selected' : ''}>Aprobado</option>
-                <option value="rechazado" ${d.proyectoFinal.docente === 'rechazado' ? 'selected' : ''}>Rechazado</option>
+                <option value="aprobado" ${d.proyectoFinal.evaluacionesDocente?.[miUID]?.estado === 'aprobado' ? 'selected' : ''}>Aprobado</option>
+                <option value="rechazado" ${d.proyectoFinal.evaluacionesDocente?.[miUID]?.estado === 'rechazado' ? 'selected' : ''}>Rechazado</option>
               </select><br/>
               <label>Comentarios:</label><br/>
-              <textarea rows="3">${d.proyectoFinal.obsDocente || ''}</textarea><br/>
+              <textarea rows="3">${d.proyectoFinal.evaluacionesDocente?.[miUID]?.obs || ''}</textarea><br/>
               <button type="submit" class="btn-calificar">Guardar</button>
             </form>
           </div>
@@ -151,12 +152,12 @@ onAuthStateChanged(auth, async (user) => {
       revisarDiv.innerHTML = html;
     }
 
-    // Ocultar lista y mostrar formulario de revisión
+    // Ocultar lista y mostrar revisión
     listaAlumnosDiv.style.display = 'none';
     revisarDiv.style.display      = 'block';
   });
 
-  // 6) Manejar envíos de formularios de calificación
+  // 6) Manejar envío de formularios de calificación
   revisarDiv.addEventListener('submit', async (e) => {
     if (!e.target.matches('.form-calificar')) return;
     e.preventDefault();
@@ -166,22 +167,26 @@ onAuthStateChanged(auth, async (user) => {
     const estado  = form.querySelector('select').value;
     const observ  = form.querySelector('textarea').value;
 
-    // El UID del alumno está en el <h3> como texto "Documentos de <uidAlumno>"
+    // Extraer UID del alumno del <h3> “Documentos de <uidAlumno>”
     const tituloH3 = revisarDiv.querySelector('h3').textContent;
     const uidAlumno = tituloH3.replace('Documentos de ', '').trim();
 
-    // Actualizar Firestore en 'residencias/{uidAlumno}'
+    // Referencia a Firestore
     const refRes = doc(db, 'residencias', uidAlumno);
 
+    // Construir objeto de actualización
+    const campoEstado   = `${docTipo}.evaluacionesDocente.${miUID}.estado`;
+    const campoObs      = `${docTipo}.evaluacionesDocente.${miUID}.obs`;
+
     const updateObj = {};
-    updateObj[`${docTipo}.docente`]    = estado;
-    updateObj[`${docTipo}.obsDocente`] = observ;
+    updateObj[campoEstado] = estado;
+    updateObj[campoObs]    = observ;
 
     await updateDoc(refRes, updateObj);
 
     alert('Calificación guardada.');
 
-    // Opcional: recargar revisión para reflejar cambios inmediatos
+    // Hacer click en “Volver” para recargar la lista de nuevo
     document.getElementById('btn-volver').click();
   });
 
