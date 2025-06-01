@@ -5,81 +5,79 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Panel de Alumno</title>
-  <!-- Asegúrate de que este enlace a styles.css sea correcto -->
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <!-- =====================
-       HEADER
-       ===================== -->
+  <!-- ===== HEADER ===== -->
   <header class="header-alumno">
     <h1>Panel de Alumno</h1>
     <button id="logout-button" class="btn-logout">Cerrar Sesión</button>
   </header>
 
-  <!-- =====================
-       SECCIÓN PRINCIPAL
-       ===================== -->
+  <!-- ===== MAIN ===== -->
   <main class="main-alumno">
-    <!-- =====================
-         1) MIS DOCUMENTOS
-         ===================== -->
-    <section id="seccion-enlaces" class="seccion-enlaces">
-      <h2>Mis Documentos</h2>
-      <div id="enlaces-documentos">
-        <!-- Aquí el script inyectará botones / enlaces "Ver Anteproyecto", etc. -->
+    <!-- === 1) Bienvenida y Nombre del Alumno === -->
+    <section id="seccion-bienvenida" class="seccion-bienvenida">
+      <h2 id="bienvenida-text">Bienvenido(a), [Nombre]</h2>
+      <div id="asesores-container">
+        <strong>Asesores asignados:</strong>
+        <ul id="lista-asesores">
+          <!-- Aquí se inyectarán hasta 2 <li> con nombres de asesores -->
+        </ul>
       </div>
       <hr />
     </section>
 
-    <!-- =====================
-         2) SUBIR DOCUMENTOS
-         ===================== -->
+    <!-- === 2) Mis Documentos === -->
+    <section id="seccion-enlaces" class="seccion-enlaces">
+      <h2>Mis Documentos</h2>
+      <div id="enlaces-documentos">
+        <!-- Aquí el script inyectará botones <a> como "Ver Anteproyecto" -->
+      </div>
+      <hr />
+    </section>
+
+    <!-- === 3) Subir Documentos === -->
     <section id="seccion-subida" class="seccion-subida">
       <h2>Subir Documentos</h2>
 
-      <!--
-        Botones para desplegar cada formulario de subida.
-        Al hacer clic, el script mostrará el bloque correspondiente.
-      -->
+      <!-- Botones para desplegar cada formulario -->
       <div class="botones-subir">
         <button id="btn-mostrar-ante" class="btn-mostrar-form">Subir Anteproyecto</button>
-        <button id="btn-mostrar-rep" class="btn-mostrar-form">Subir Reporte Parcial</button>
-        <button id="btn-mostrar-final" class="btn-mostrar-form">Subir Proyecto Final</button>
+        <button id="btn-mostrar-rep"  class="btn-mostrar-form">Subir Reporte Parcial</button>
+        <button id="btn-mostrar-fin"  class="btn-mostrar-form">Subir Proyecto Final</button>
       </div>
 
-      <!-- Formulario de Anteproyecto (oculto al inicio) -->
+      <!-- Formulario Anteproyecto (oculto por defecto) -->
       <div id="form-ante-container" class="formulario-subida" style="display: none;">
         <form id="form-anteproyecto">
-          <label for="archivo"><strong>Anteproyecto:</strong></label><br/>
-          <input type="file" accept="application/pdf" id="archivo" required /><br/>
+          <label for="archivo"><strong>Anteproyecto:</strong></label><br />
+          <input type="file" accept="application/pdf" id="archivo" required /><br />
           <button type="submit" class="btn-enviar">Subir Anteproyecto</button>
         </form>
       </div>
 
-      <!-- Formulario de Reporte Parcial (oculto al inicio) -->
+      <!-- Formulario Reporte Parcial (oculto por defecto) -->
       <div id="form-rep-container" class="formulario-subida" style="display: none;">
         <form id="form-reporte">
-          <label for="reporte"><strong>Reporte Parcial:</strong></label><br/>
-          <input type="file" accept="application/pdf" id="reporte" required /><br/>
+          <label for="reporte"><strong>Reporte Parcial:</strong></label><br />
+          <input type="file" accept="application/pdf" id="reporte" required /><br />
           <button type="submit" class="btn-enviar">Subir Reporte Parcial</button>
         </form>
       </div>
 
-      <!-- Formulario de Proyecto Final (oculto al inicio) -->
-      <div id="form-final-container" class="formulario-subida" style="display: none;">
+      <!-- Formulario Proyecto Final (oculto por defecto) -->
+      <div id="form-fin-container" class="formulario-subida" style="display: none;">
         <form id="form-final">
-          <label for="final"><strong>Proyecto Final:</strong></label><br/>
-          <input type="file" accept="application/pdf" id="final" required /><br/>
+          <label for="final"><strong>Proyecto Final:</strong></label><br />
+          <input type="file" accept="application/pdf" id="final" required /><br />
           <button type="submit" class="btn-enviar">Subir Proyecto Final</button>
         </form>
       </div>
     </section>
   </main>
 
-  <!-- =====================
-       SCRIPTS
-       ===================== -->
+  <!-- ===== SCRIPTS ===== -->
   <script type="module" src="firebase-config.js"></script>
   <script type="module" src="script-alumno.js"></script>
 </body>
