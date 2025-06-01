@@ -2,39 +2,33 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Residencias - Administrador</title>
-  <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Panel Ejecutivo</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <header>
-    <img src="logo.jpg" alt="Logo">
+  <!-- ===== HEADER ===== -->
+  <header class="header-ejecutivo">
     <h1>Panel de Administrador</h1>
-    <button id="logout-button">Cerrar Sesión</button>
+    <button id="logout-button" class="btn-logout">Cerrar Sesión</button>
   </header>
-  <main>
-    <section>
-      <h2>Asignar Asesores</h2>
-      <form id="form-asignar-asesor">
-        <label>Alumno:
-          <select id="alumno"></select>
-        </label>
-        <label>Docente:
-          <select id="docente"></select>
-        </label>
-        <button type="submit">Asignar</button>
-      </form>
-    </section>
-    <section>
-      <h2>Validar Documentación</h2>
-      <div id="lista-documentos">Cargando…</div>
+
+  <!-- ===== MAIN ===== -->
+  <main class="main-ejecutivo">
+    <section id="seccion-alumnos">
+      <h2>Lista de Alumnos y Asignación de Asesores</h2>
+      <div id="lista-alumnos-ejecutivo" class="lista-alumnos-ejecutivo">
+        <!-- Aquí se inyectarán tarjetas con cada alumno y sus selects para docentes -->
+      </div>
     </section>
   </main>
-  <footer>
+
+  <footer class="footer-ejecutivo">
     <p>&copy; 2025 Sistema de Residencias Profesionales</p>
   </footer>
 
+  <!-- ===== SCRIPTS ===== -->
   <script type="module" src="firebase-config.js"></script>
   <script type="module" src="script-ejecutivo.js"></script>
 </body>
