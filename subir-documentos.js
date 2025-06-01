@@ -6,8 +6,6 @@ import {
   onAuthStateChanged 
 } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js';
 import { 
-  collection, 
-  addDoc, 
   doc, 
   setDoc 
 } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
