@@ -17,7 +17,7 @@ const auth = getAuth(app);
 
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
-    // Sin usuario → ir a index
+    // Si no hay usuario logueado, redirigir a la página principal
     return window.location.href = 'index.html';
   }
 
@@ -26,16 +26,16 @@ onAuthStateChanged(auth, async (user) => {
   // 1) Verificar rol “alumno”
   const perfilSnap = await getDoc(doc(db, 'usuarios', uid));
   if (!perfilSnap.exists() || perfilSnap.data().rol !== 'alumno') {
-    alert('Acceso denegado: Solo alumnos pueden ver este panel.');
+    alert('Acceso denegado: Sólo alumnos pueden ver este panel.');
     await signOut(auth);
     return window.location.href = 'index.html';
   }
 
-  // 2) Bienvenida
+  // 2) Mostrar nombre en “Bienvenido(a), <nombre>”
   const nombreAlumno = perfilSnap.data().nombre || '';
   document.getElementById('bienvenida-text').textContent = `Bienvenido(a), ${nombreAlumno}`;
 
-  // 3) Obtener documento en Firestore
+  // 3) Obtener referencia a 'residencias/{uid}'
   const resRef = doc(db, 'residencias', uid);
   const resSnap = await getDoc(resRef);
   if (!resSnap.exists()) {
@@ -45,7 +45,7 @@ onAuthStateChanged(auth, async (user) => {
   // Guardamos localmente la data para ir actualizando sin recargar
   const data = resSnap.data();
 
-  // 4) Mostrar lista de asesores
+  // 4) Mostrar lista de asesores (hasta 2)
   const listaAsesoresUL = document.getElementById('lista-asesores');
   listaAsesoresUL.innerHTML = '';
   if (Array.isArray(data.asesores) && data.asesores.length > 0) {
@@ -62,15 +62,15 @@ onAuthStateChanged(auth, async (user) => {
     listaAsesoresUL.appendChild(li);
   }
 
-  // 5) Función para renderizar “Mis Documentos”
-  function renderizarDocumentos() {
-    enlacesDiv.innerHTML = ''; // Limpiar
+  // 5) Función ASÍNCRONA para renderizar “Mis Documentos”
+  async function renderizarDocumentos() {
+    enlacesDiv.innerHTML = ''; // Limpiar por completo
 
-    // ************* ANTEPROYECTO *************
+    // ====== ANTEPROYECTO ======
     const bloqueAnte = document.createElement('div');
     bloqueAnte.classList.add('enlace-con-estado');
 
-    // 5.1) Enlace o texto “Sin archivo”
+    // 5.1) Si existe URL, mostramos enlace; si no, texto "Sin archivo"
     if (data.anteproyecto?.url) {
       const enlaceAnte = document.createElement('a');
       enlaceAnte.href = data.anteproyecto.url;
@@ -79,37 +79,41 @@ onAuthStateChanged(auth, async (user) => {
       enlaceAnte.classList.add('btn-enlace');
       bloqueAnte.appendChild(enlaceAnte);
     } else {
+      // Texto “Sin archivo subido”
       const spanNoFile = document.createElement('span');
       spanNoFile.textContent = 'Anteproyecto: Sin archivo subido';
       spanNoFile.classList.add('status-pendiente');
       bloqueAnte.appendChild(spanNoFile);
     }
 
-    // 5.2) Evaluaciones de cada docente
+    // 5.2) Evaluaciones de cada docente (si existen)
     if (data.anteproyecto?.evaluacionesDocente) {
       for (const [uidDoc, evalObj] of Object.entries(data.anteproyecto.evaluacionesDocente)) {
         const docSnap = await getDoc(doc(db, 'usuarios', uidDoc));
         const nombreDoc = docSnap.exists() ? docSnap.data().nombre : '[Docente eliminado]';
         const estadoDoc = evalObj.estado || 'pendiente';
-        const textoDoc = estadoDoc === 'aprobado'
-          ? `Aprobado por ${nombreDoc}`
-          : estadoDoc === 'rechazado'
-            ? `Rechazado por ${nombreDoc}`
-            : `Pendiente evaluación de ${nombreDoc}`;
+
+        let textoDoc = '';
+        let claseDoc = '';
+        if (estadoDoc === 'aprobado') {
+          textoDoc = `Aprobado por ${nombreDoc}`;
+          claseDoc = 'status-aprobado';
+        } else if (estadoDoc === 'rechazado') {
+          textoDoc = `Rechazado por ${nombreDoc}`;
+          claseDoc = 'status-rechazado';
+        } else {
+          textoDoc = `Pendiente evaluación de ${nombreDoc}`;
+          claseDoc = 'status-pendiente';
+        }
+
         const spanE = document.createElement('span');
         spanE.textContent = textoDoc;
-        spanE.classList.add(
-          estadoDoc === 'aprobado'
-            ? 'status-aprobado'
-            : estadoDoc === 'rechazado'
-              ? 'status-rechazado'
-              : 'status-pendiente'
-        );
+        spanE.classList.add(claseDoc);
         bloqueAnte.appendChild(spanE);
       }
     }
 
-    // 5.3) Evaluación del Admin
+    // 5.3) Evaluación del Admin (si existe y no está en “pendiente”)
     if (data.anteproyecto?.adminEstado && data.anteproyecto.adminEstado !== 'pendiente') {
       const textoAdm = data.anteproyecto.adminEstado === 'aprobado'
         ? 'Aprobado por Admin'
@@ -117,14 +121,12 @@ onAuthStateChanged(auth, async (user) => {
       const spanAdmin = document.createElement('span');
       spanAdmin.textContent = textoAdm;
       spanAdmin.classList.add(
-        data.anteproyecto.adminEstado === 'aprobado'
-          ? 'status-aprobado'
-          : 'status-rechazado'
+        data.anteproyecto.adminEstado === 'aprobado' ? 'status-aprobado' : 'status-rechazado'
       );
       bloqueAnte.appendChild(spanAdmin);
     }
 
-    // 5.4) Comentarios de cada docente
+    // 5.4) Comentarios de cada docente (si evalObj.obs existe)
     if (data.anteproyecto?.evaluacionesDocente) {
       for (const [uidDoc, evalObj] of Object.entries(data.anteproyecto.evaluacionesDocente)) {
         if (evalObj.obs) {
@@ -137,7 +139,7 @@ onAuthStateChanged(auth, async (user) => {
       }
     }
 
-    // 5.5) Comentarios del Admin
+    // 5.5) Comentario del Admin (si existe)
     if (data.anteproyecto?.adminObs) {
       const pObsAdm = document.createElement('p');
       pObsAdm.innerHTML = `<strong>Comentario Admin:</strong> ${data.anteproyecto.adminObs}`;
@@ -146,7 +148,8 @@ onAuthStateChanged(auth, async (user) => {
 
     enlacesDiv.appendChild(bloqueAnte);
 
-    // ************* REPORTE PARCIAL *************
+
+    // ====== REPORTE PARCIAL ======
     const bloqueRep = document.createElement('div');
     bloqueRep.classList.add('enlace-con-estado');
 
@@ -169,20 +172,23 @@ onAuthStateChanged(auth, async (user) => {
         const docSnap = await getDoc(doc(db, 'usuarios', uidDoc));
         const nombreDoc = docSnap.exists() ? docSnap.data().nombre : '[Docente eliminado]';
         const estadoDoc = evalObj.estado || 'pendiente';
-        const textoDoc = estadoDoc === 'aprobado'
-          ? `Aprobado por ${nombreDoc}`
-          : estadoDoc === 'rechazado'
-            ? `Rechazado por ${nombreDoc}`
-            : `Pendiente evaluación de ${nombreDoc}`;
+
+        let textoDoc = '';
+        let claseDoc = '';
+        if (estadoDoc === 'aprobado') {
+          textoDoc = `Aprobado por ${nombreDoc}`;
+          claseDoc = 'status-aprobado';
+        } else if (estadoDoc === 'rechazado') {
+          textoDoc = `Rechazado por ${nombreDoc}`;
+          claseDoc = 'status-rechazado';
+        } else {
+          textoDoc = `Pendiente evaluación de ${nombreDoc}`;
+          claseDoc = 'status-pendiente';
+        }
+
         const spanE = document.createElement('span');
         spanE.textContent = textoDoc;
-        spanE.classList.add(
-          estadoDoc === 'aprobado'
-            ? 'status-aprobado'
-            : estadoDoc === 'rechazado'
-              ? 'status-rechazado'
-              : 'status-pendiente'
-        );
+        spanE.classList.add(claseDoc);
         bloqueRep.appendChild(spanE);
       }
     }
@@ -194,9 +200,7 @@ onAuthStateChanged(auth, async (user) => {
       const spanAdminR = document.createElement('span');
       spanAdminR.textContent = textoAdm;
       spanAdminR.classList.add(
-        data.reporteParcial.adminEstado === 'aprobado'
-          ? 'status-aprobado'
-          : 'status-rechazado'
+        data.reporteParcial.adminEstado === 'aprobado' ? 'status-aprobado' : 'status-rechazado'
       );
       bloqueRep.appendChild(spanAdminR);
     }
@@ -221,7 +225,8 @@ onAuthStateChanged(auth, async (user) => {
 
     enlacesDiv.appendChild(bloqueRep);
 
-    // ************* PROYECTO FINAL *************
+
+    // ====== PROYECTO FINAL ======
     const bloqueFin = document.createElement('div');
     bloqueFin.classList.add('enlace-con-estado');
 
@@ -244,20 +249,23 @@ onAuthStateChanged(auth, async (user) => {
         const docSnap = await getDoc(doc(db, 'usuarios', uidDoc));
         const nombreDoc = docSnap.exists() ? docSnap.data().nombre : '[Docente eliminado]';
         const estadoDoc = evalObj.estado || 'pendiente';
-        const textoDoc = estadoDoc === 'aprobado'
-          ? `Aprobado por ${nombreDoc}`
-          : estadoDoc === 'rechazado'
-            ? `Rechazado por ${nombreDoc}`
-            : `Pendiente evaluación de ${nombreDoc}`;
+
+        let textoDoc = '';
+        let claseDoc = '';
+        if (estadoDoc === 'aprobado') {
+          textoDoc = `Aprobado por ${nombreDoc}`;
+          claseDoc = 'status-aprobado';
+        } else if (estadoDoc === 'rechazado') {
+          textoDoc = `Rechazado por ${nombreDoc}`;
+          claseDoc = 'status-rechazado';
+        } else {
+          textoDoc = `Pendiente evaluación de ${nombreDoc}`;
+          claseDoc = 'status-pendiente';
+        }
+
         const spanE = document.createElement('span');
         spanE.textContent = textoDoc;
-        spanE.classList.add(
-          estadoDoc === 'aprobado'
-            ? 'status-aprobado'
-            : estadoDoc === 'rechazado'
-              ? 'status-rechazado'
-              : 'status-pendiente'
-        );
+        spanE.classList.add(claseDoc);
         bloqueFin.appendChild(spanE);
       }
     }
@@ -269,9 +277,7 @@ onAuthStateChanged(auth, async (user) => {
       const spanAdminF = document.createElement('span');
       spanAdminF.textContent = textoAdm;
       spanAdminF.classList.add(
-        data.proyectoFinal.adminEstado === 'aprobado'
-          ? 'status-aprobado'
-          : 'status-rechazado'
+        data.proyectoFinal.adminEstado === 'aprobado' ? 'status-aprobado' : 'status-rechazado'
       );
       bloqueFin.appendChild(spanAdminF);
     }
@@ -297,9 +303,10 @@ onAuthStateChanged(auth, async (user) => {
     enlacesDiv.appendChild(bloqueFin);
   }
 
-  // Referencia del contenedor de enlaces
+  // Referencia al contenedor de "Mis Documentos"
   const enlacesDiv = document.getElementById('enlaces-documentos');
-  renderizarDocumentos();
+  // Llamamos la primera vez para renderizar tras cargar datos
+  await renderizarDocumentos();
 
   // 6) Botón “Cerrar Sesión” → redirigir a index.html
   document.getElementById('logout-button').addEventListener('click', async () => {
@@ -307,7 +314,7 @@ onAuthStateChanged(auth, async (user) => {
     window.location.href = 'index.html';
   });
 
-  // 7) Mostrar / ocultar formularios
+  // 7) Mostrar / ocultar formularios de subida
   const btnMostrarAnte = document.getElementById('btn-mostrar-ante');
   const btnMostrarRep  = document.getElementById('btn-mostrar-rep');
   const btnMostrarFin  = document.getElementById('btn-mostrar-fin');
@@ -341,19 +348,18 @@ onAuthStateChanged(auth, async (user) => {
     }
     try {
       const url = await uploadPdf(file, `anteproyectos/${uid}.pdf`);
-      // Actualizar Firestore: establecemos URL y dejamos evaluacionesDocente vacío, admin en "pendiente"
+      // Cada vez que subimos, reseteamos las evaluacionesDocente y admin
       await updateDoc(resRef, {
         'anteproyecto.url': url,
-        'anteproyecto.evaluacionesDocente': {},  // reseteamos cualquier evaluación previa del docente
+        'anteproyecto.evaluacionesDocente': {},
         'anteproyecto.adminEstado': 'pendiente',
         'anteproyecto.adminObs': ''
       });
-      // Actualizamos variable local
       data.anteproyecto.url = url;
       data.anteproyecto.evaluacionesDocente = {};
       data.anteproyecto.adminEstado = 'pendiente';
       data.anteproyecto.adminObs = '';
-      renderizarDocumentos();
+      await renderizarDocumentos();
       alert('Anteproyecto subido correctamente.');
       contAnte.style.display = 'none';
     } catch (error) {
@@ -381,7 +387,7 @@ onAuthStateChanged(auth, async (user) => {
       data.reporteParcial.evaluacionesDocente = {};
       data.reporteParcial.adminEstado = 'pendiente';
       data.reporteParcial.adminObs = '';
-      renderizarDocumentos();
+      await renderizarDocumentos();
       alert('Reporte parcial subido correctamente.');
       contRep.style.display = 'none';
     } catch (error) {
@@ -409,7 +415,7 @@ onAuthStateChanged(auth, async (user) => {
       data.proyectoFinal.evaluacionesDocente = {};
       data.proyectoFinal.adminEstado = 'pendiente';
       data.proyectoFinal.adminObs = '';
-      renderizarDocumentos();
+      await renderizarDocumentos();
       alert('Proyecto final subido correctamente.');
       contFin.style.display = 'none';
     } catch (error) {
