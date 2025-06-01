@@ -151,3 +151,28 @@
     width: 100%;
   }
 }
+/* ================================
+   ESTADOS DE DOCUMENTOS (Alumno)
+   ================================ */
+
+.status-pendiente {
+  color: #6c757d; /* gris */
+  font-weight: bold;
+}
+
+.status-aprobado {
+  color: #28a745; /* verde */
+  font-weight: bold;
+}
+
+.status-rechazado {
+  color: #dc3545; /* rojo */
+  font-weight: bold;
+}
+
+/* Pequeño estilo para el texto que indica quién calificó */
+.info-calificador {
+  font-size: 0.9rem;
+  margin-left: 0.5rem;
+  color: #444;
+}
