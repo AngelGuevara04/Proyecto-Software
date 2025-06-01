@@ -298,3 +298,63 @@ form textarea {
     font-size: 1.1rem; /* ~17.6px */
   }
 }
+
+/* ===========================
+   TABLAS RESPONSIVAS PARA “MIS DOCUMENTOS”
+   =========================== */
+
+#enlaces-documentos table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1.5rem;
+}
+
+#enlaces-documentos th,
+#enlaces-documentos td {
+  border: 1px solid #ccc;
+  padding: 0.75rem;
+  text-align: left;
+  vertical-align: top;
+  font-size: 0.95rem;
+}
+
+#enlaces-documentos th {
+  background-color: #f0f0f0;
+  font-weight: bold;
+}
+
+/* Encabezado de tabla centrado */
+#enlaces-documentos caption {
+  caption-side: top;
+  text-align: left;
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+}
+
+/* Celdas de estado con colores */
+.status-aprobado {
+  color: #27ae60;
+  font-weight: bold;
+}
+
+.status-rechazado {
+  color: #c0392b;
+  font-weight: bold;
+}
+
+.status-pendiente {
+  color: #f39c12;
+  font-weight: bold;
+}
+
+/* En móvil (pantallas muy estrechas), hacer la tabla de desplazamiento horizontal */
+@media (max-width: 480px) {
+  #enlaces-documentos {
+    overflow-x: auto;
+  }
+  #enlaces-documentos table {
+    display: inline-block;
+    min-width: 480px;
+  }
+}
